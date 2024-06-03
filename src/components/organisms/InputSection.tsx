@@ -229,7 +229,7 @@ export const InputSection = () => {
       {scan && (
         <div>
           <p>Scan Progress...{`[${tbts.length}/${numOfRecords}]`}</p>
-          <p>Scanning the page in {timer} sec</p>
+          <p>Scanning the page for {timer} sec</p>
         </div>
       )}
       {tbts.length > 0 && !scan && (
