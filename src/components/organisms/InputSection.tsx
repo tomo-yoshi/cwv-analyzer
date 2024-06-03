@@ -120,7 +120,7 @@ export const InputSection = () => {
       // console.log(`Scan completed [${tbts.length + 1}/${numOfRecords}]`);
     };
 
-    let getTbtInterval = undefined;
+    let getTbtInterval: NodeJS.Timer | undefined = undefined;
 
     if (scan) {
       getTbt();
