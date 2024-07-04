@@ -49,7 +49,7 @@ interface TbtItem {
 export const InputSection = () => {
   const [url, setUrl] = useState('');
   const [tbts, setTbts] = useState<TbtItem[]>([]);
-  const [timer, setTimer] = useState<number>(0);
+  const [timer, setTimer] = useState(0);
   const [scan, setScan] = useState(false);
   const [numOfRecords, setNumOfRecords] = useState(1);
   const [showTimestamp, setShowTimestamp] = useState(true);
@@ -61,12 +61,17 @@ export const InputSection = () => {
 
   const changeNumOfRecords = (el: ChangeEvent<HTMLInputElement>) => {
     const inputNum = Number(el.target.value);
-    if (inputNum > 0 && inputNum <= 100) {
-      setNumOfRecords(inputNum);
-    }
+    setNumOfRecords(inputNum);
   };
 
   useEffect(() => {
+    if (!scan) {
+      return;
+    } else if (!numOfRecords) {
+      alert('Invalid Number of Records');
+      return;
+    }
+
     const getTbt = async () => {
       // console.log(`Scan start [${tbts.length + 1}/${numOfRecords}]`)
       const queryOptions = {
@@ -250,43 +255,3 @@ export const InputSection = () => {
 };
 
 export default InputSection;
-
-// if (scan) {
-//   (async () => {
-//     let count = 0;
-//     while (count < numOfRecords) {
-//       console.log(`Scan start [${count + 1}/${numOfRecords}]`)
-//       const options = {
-//         url: "https://canadiantrainvacations.com/",
-//         category: "performance",
-//         strategy: "mobile",
-//       };
-
-//       const queryParams = new URLSearchParams(options);
-
-//       try {
-//         const result: PagespeedApiRes = await fetch(`https://www.googleapis.com/pagespeedonline/v5/runPagespeed?${queryParams}`).then(res => res.json());
-
-//         console.log('result: ', result);
-
-//         const tbtResult = {
-//           timeStamp: result.analysisUTCTimestamp,
-//           result: result.lighthouseResult.audits['total-blocking-time']
-//         };
-
-//         console.log('tbtResult: ', tbtResult);
-
-//         setTbts((prev) => {
-//           const isExist = prev.find((item) => item.timeStamp === tbtResult.timeStamp);
-//           return isExist ? prev : [...prev, tbtResult]
-//         })
-//       } catch (error) {
-//         console.error(error);
-//         break;
-//       }
-//       count++;
-//       console.log(`Scan completed [${count}/${numOfRecords}]`);
-//     } // while loop end
-//     setScan(false);
-//   })()
-// }
