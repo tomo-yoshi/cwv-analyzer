@@ -4,7 +4,7 @@ import Head from 'next/head';
 import * as React from 'react';
 import '@/lib/env';
 
-import InputSection from '@/components/organisms/InputSection';
+import TBTConfig from '@/components/organisms/TBTConfig';
 
 /**
  * SVGR Support
@@ -22,9 +22,9 @@ export default function HomePage() {
   return (
     <main>
       <Head>
-        <title>Hi</title>
+        <title>CWV Analyzer</title>
       </Head>
-      <InputSection />
+      <TBTConfig />
     </main>
   );
 }

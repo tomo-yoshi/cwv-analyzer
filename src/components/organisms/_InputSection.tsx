@@ -1,50 +1,13 @@
-import clsx from 'clsx';
+
 import { ChangeEvent, useEffect, useState } from 'react';
+
+import { cn } from '@/lib/utils';
 
 import Button from '@/components/atoms/buttons/Button';
 
-interface DateTimeFormatOptions {
-  localeMatcher?: 'best fit' | 'lookup';
-  weekday?: 'narrow' | 'short' | 'long';
-  era?: 'narrow' | 'short' | 'long';
-  year?: 'numeric' | '2-digit';
-  month?: 'numeric' | '2-digit' | 'narrow' | 'short' | 'long';
-  day?: 'numeric' | '2-digit';
-  hour?: 'numeric' | '2-digit';
-  minute?: 'numeric' | '2-digit';
-  second?: 'numeric' | '2-digit';
-  timeZoneName?: 'short' | 'long';
-  formatMatcher?: 'best fit' | 'basic';
-  hour12?: boolean;
-  timeZone?: string;
-}
+import type{ DateTimeFormatOptions } from '@/types';
+import type { PagespeedApiRes, TbtItem } from '@/types/pagespeed';
 
-interface PagespeedApiRes {
-  analysisUTCTimestamp: string;
-  id: string; // Website URL
-  lighthouseResult: {
-    timing: number;
-    audits: {
-      'total-blocking-time': TbtResult;
-    };
-  };
-}
-
-interface TbtResult {
-  description: 'Sum of all time periods between FCP and Time to Interactive, when task length exceeded 50ms, expressed in milliseconds. [Learn more about the Total Blocking Time metric](https://developer.chrome.com/docs/lighthouse/performance/lighthouse-total-blocking-time/).';
-  displayValue: `${number} ms`;
-  id: 'total-blocking-time';
-  numericUnit: 'millisecond';
-  numericValue: number;
-  score: number;
-  scoreDisplayMode: 'numeric';
-  title: 'Total Blocking Time';
-}
-
-interface TbtItem {
-  timeStamp: string;
-  result: TbtResult;
-}
 
 export const InputSection = () => {
   const [url, setUrl] = useState('');
@@ -125,7 +88,7 @@ export const InputSection = () => {
       // console.log(`Scan completed [${tbts.length + 1}/${numOfRecords}]`);
     };
 
-    let getTbtInterval: NodeJS.Timer | undefined = undefined;
+    let getTbtInterval: NodeJS.Timeout | undefined = undefined;
 
     if (scan) {
       getTbt();
@@ -198,7 +161,7 @@ export const InputSection = () => {
         <table className='w-full'>
           <tbody>
             <tr
-              className={clsx(
+              className={cn(
                 'border-b-2 grid',
                 showTimestamp ? 'grid-cols-2' : 'grid-cols-1'
               )}
@@ -209,7 +172,7 @@ export const InputSection = () => {
             {tbts.slice(0, numOfRecords).map((item) => (
               <tr
                 key={item?.timeStamp}
-                className={clsx(
+                className={cn(
                   'border-b-2 grid',
                   showTimestamp ? 'grid-cols-2' : 'grid-cols-1'
                 )}
