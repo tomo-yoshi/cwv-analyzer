@@ -1,9 +1,10 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+// import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import { usePageSpeedStore } from '@/stores/usePageSpeedStore';
-import { useTestData } from '@/hooks/useTestData';
+// import { useTestData } from '@/hooks/useTestData';
 
 // Dynamically import the Split component with ssr disabled
 const Split = dynamic(
@@ -24,15 +25,15 @@ const TbtDashboard = () => {
   const [showChart, setShowChart] = useState(false);
   const [showPieCharts, setShowPieCharts] = useState(false);
 
-  const { loadTestData } = useTestData();
+  // const { loadTestData } = useTestData();
   const { tbts1, tbts2, displayName1, displayName2 } = usePageSpeedStore();
 
   // Load test data in development
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      loadTestData();
-    }
-  }, [loadTestData]);
+  // useEffect(() => {
+  //   if (process.env.NODE_ENV === 'development') {
+  //     loadTestData();
+  //   }
+  // }, [loadTestData]);
 
   return (
     <div className="h-screen flex flex-col">
