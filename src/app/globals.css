@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Splitter styles */
+.splitter {
+  @apply bg-gray-200 hover:bg-gray-300 transition-colors cursor-col-resize;
+}
+
+.splitter-layout {
+  @apply bg-gray-50;
+}
+
+.splitter-layout > .layout-pane {
+  @apply overflow-auto;
+}
+
+.splitter-layout > .layout-pane.layout-pane-primary {
+  @apply bg-white;
+}

@@ -17,7 +17,23 @@ const SCORE_RANGES = [
   { min: 20001, max: Infinity, label: '20001~' },
 ];
 
-const COLORS = ['#E8E8E8', '#D3D3D3', '#BEBEBE', '#A9A9A9', '#808080', '#696969'];
+const URL1_COLORS = [
+  '#e7f5ff',  // Lightest blue
+  '#d0ebff',
+  '#a5d8ff',
+  '#74c0fc',
+  '#4dabf7',
+  '#339af0',  // Darkest blue
+];
+
+const URL2_COLORS = [
+  '#fff5f5',  // Lightest red
+  '#ffe3e3',
+  '#ffc9c9',
+  '#ffa8a8',
+  '#ff8787',
+  '#ff6b6b',  // Darkest red
+];
 
 export const TbtDistributionPieCharts = ({
   url1Data,
@@ -101,7 +117,9 @@ export const TbtDistributionPieCharts = ({
   return (
     <div className="flex flex-col gap-4">
       <div className="w-full">
-        <h3 className="text-center mb-2 text-base">{url1Name} / Num of Records Ratio</h3>
+        <h3 className="text-center mb-2 text-base font-medium text-gray-800">
+          {url1Name} / Num of Records Ratio
+        </h3>
         <ResponsiveContainer width="100%" height={350}>
           <PieChart margin={{ top: 10, right: 80, bottom: 10, left: 80 }}>
             <Pie
@@ -115,7 +133,7 @@ export const TbtDistributionPieCharts = ({
               labelLine={true}
             >
               {url1Distribution.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                <Cell key={`cell-${index}`} fill={URL1_COLORS[index]} />
               ))}
             </Pie>
           </PieChart>
@@ -123,7 +141,9 @@ export const TbtDistributionPieCharts = ({
       </div>
 
       <div className="w-full">
-        <h3 className="text-center mb-2 text-base">{url2Name} / Num of Records Ratio</h3>
+        <h3 className="text-center mb-2 text-base font-medium text-gray-800">
+          {url2Name} / Num of Records Ratio
+        </h3>
         <ResponsiveContainer width="100%" height={350}>
           <PieChart margin={{ top: 10, right: 80, bottom: 10, left: 80 }}>
             <Pie
@@ -137,7 +157,7 @@ export const TbtDistributionPieCharts = ({
               labelLine={true}
             >
               {url2Distribution.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                <Cell key={`cell-${index}`} fill={URL2_COLORS[index]} />
               ))}
             </Pie>
           </PieChart>

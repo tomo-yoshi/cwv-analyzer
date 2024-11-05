@@ -31,13 +31,13 @@ const TbtAnalytics = ({
         url2Name={url2Name}
       />
       
-      <div className='border-b-2 pb-4'>
+      <div className='pb-4'>
         <div 
-          className="flex justify-between items-center mb-2 cursor-pointer" 
+          className="flex justify-between items-center mb-2 cursor-pointer rounded-md px-3 py-2 hover:bg-primary-50 transition-colors" 
           onClick={() => setShowTable(!showTable)}
         >
-          <h2 className="text-lg font-semibold">Distribution Table</h2>
-          <button className="px-2 py-1 text-lg font-bold transition-transform duration-200">
+          <h2 className="text-lg font-semibold text-gray-800">Distribution Table</h2>
+          <button className="px-2 py-1 text-lg font-bold text-primary-500 hover:text-primary-600 transition-colors">
             {showTable ? '−' : '+'}
           </button>
         </div>
@@ -53,13 +53,13 @@ const TbtAnalytics = ({
         </div>
       </div>
 
-      <div className='border-b-2 pb-4'>
+      <div className='pb-4'>
         <div 
-          className="flex justify-between items-center mb-2 cursor-pointer"
+          className="flex justify-between items-center mb-2 cursor-pointer rounded-md px-3 py-2 hover:bg-primary-50 transition-colors"
           onClick={() => setShowChart(!showChart)}
         >
-          <h2 className="text-lg font-semibold">Distribution Chart</h2>
-          <button className="px-2 py-1 text-lg font-bold transition-transform duration-200">
+          <h2 className="text-lg font-semibold text-gray-800">Distribution Chart</h2>
+          <button className="px-2 py-1 text-lg font-bold text-primary-500 hover:text-primary-600 transition-colors">
             {showChart ? '−' : '+'}
           </button>
         </div>
@@ -79,11 +79,11 @@ const TbtAnalytics = ({
 
       <div>
         <div 
-          className="flex justify-between items-center mb-2 cursor-pointer"
+          className="flex justify-between items-center mb-2 cursor-pointer rounded-md px-3 py-2 hover:bg-primary-50 transition-colors"
           onClick={() => setShowPieCharts(!showPieCharts)}
         >
-          <h2 className="text-lg font-semibold">Distribution Pie Charts</h2>
-          <button className="px-2 py-1 text-lg font-bold transition-transform duration-200">
+          <h2 className="text-lg font-semibold text-gray-800">Distribution Pie Charts</h2>
+          <button className="px-2 py-1 text-lg font-bold text-primary-500 hover:text-primary-600 transition-colors">
             {showPieCharts ? '−' : '+'}
           </button>
         </div>
