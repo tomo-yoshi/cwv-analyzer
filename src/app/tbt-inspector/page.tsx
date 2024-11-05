@@ -1,9 +1,15 @@
 "use client"
 
-import { Split } from '@geoffcox/react-splitter';
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { usePageSpeedStore } from '@/stores/usePageSpeedStore';
 import { useTestData } from '@/hooks/useTestData';
+
+// Dynamically import the Split component with ssr disabled
+const Split = dynamic(
+  () => import('@geoffcox/react-splitter').then(mod => mod.Split),
+  { ssr: false }
+);
 
 import TbtDistributionChart from '@/components/molecules/TbtDistributionChart';
 import TbtDistributionPieCharts from '@/components/molecules/TbtDistributionPieCharts';
