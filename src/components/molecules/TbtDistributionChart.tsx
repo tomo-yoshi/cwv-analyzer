@@ -1,5 +1,4 @@
-import { Bar, BarChart, CartesianGrid, Legend,XAxis, YAxis } from 'recharts';
-
+import { Bar, BarChart, CartesianGrid, Legend, XAxis, YAxis } from 'recharts';
 import type { TbtItem } from "@/types/pagespeed";
 
 interface TbtDistributionChartProps {
@@ -60,9 +59,18 @@ export const TbtDistributionChart = ({
       margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
     >
       <CartesianGrid strokeDasharray="3 3" />
-      <XAxis dataKey="range" />
-      <YAxis domain={[0, 25]} />
-      <Legend />
+      <XAxis 
+        dataKey="range" 
+        tick={{ fontSize: 10 }}
+        height={50}
+      />
+      <YAxis 
+        domain={[0, 25]} 
+        tick={{ fontSize: 10 }}
+      />
+      <Legend 
+        wrapperStyle={{ fontSize: '10px' }}
+      />
       <Bar
         dataKey="url1"
         name={`[${url1Name}] Num of Records`}
@@ -79,4 +87,4 @@ export const TbtDistributionChart = ({
   );
 };
 
-export default TbtDistributionChart; 
+export default TbtDistributionChart;
