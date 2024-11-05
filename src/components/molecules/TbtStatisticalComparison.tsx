@@ -2,17 +2,17 @@ import { useMemo } from 'react';
 import type { TbtItem } from "@/types/pagespeed";
 
 interface TbtStatisticalComparisonProps {
-  previewData: TbtItem[];
-  productionData: TbtItem[];
-  previewSiteName: string;
-  productionSiteName: string;
+  url1Data: TbtItem[];
+  url2Data: TbtItem[];
+  url1Name: string;
+  url2Name: string;
 }
 
 export const TbtStatisticalComparison = ({
-  previewData,
-  productionData,
-  previewSiteName,
-  productionSiteName,
+  url1Data,
+  url2Data,
+  url1Name,
+  url2Name,
 }: TbtStatisticalComparisonProps) => {
   // Helper function for normal CDF
   const normalCDF = (x: number): number => {
@@ -23,34 +23,34 @@ export const TbtStatisticalComparison = ({
   };
 
   const stats = useMemo(() => {
-    if (previewData.length === 0 || productionData.length === 0) {
+    if (url1Data.length === 0 || url2Data.length === 0) {
       return null;
     }
 
     // Extract numeric values
-    const preview = previewData.map(item => item.result.numericValue);
-    const production = productionData.map(item => item.result.numericValue);
+    const url1Values = url1Data.map(item => item.result.numericValue);
+    const url2Values = url2Data.map(item => item.result.numericValue);
 
     // Calculate means
-    const previewMean = preview.reduce((a, b) => a + b, 0) / preview.length;
-    const productionMean = production.reduce((a, b) => a + b, 0) / production.length;
+    const url1Mean = url1Values.reduce((a, b) => a + b, 0) / url1Values.length;
+    const url2Mean = url2Values.reduce((a, b) => a + b, 0) / url2Values.length;
 
     // Calculate variances
-    const previewVariance = preview.reduce((a, b) => a + Math.pow(b - previewMean, 2), 0) / (preview.length - 1);
-    const productionVariance = production.reduce((a, b) => a + Math.pow(b - productionMean, 2), 0) / (production.length - 1);
+    const url1Variance = url1Values.reduce((a, b) => a + Math.pow(b - url1Mean, 2), 0) / (url1Values.length - 1);
+    const url2Variance = url2Values.reduce((a, b) => a + Math.pow(b - url2Mean, 2), 0) / (url2Values.length - 1);
 
     // Calculate t-statistic
     const pooledStandardError = Math.sqrt(
-      (previewVariance / preview.length) + (productionVariance / production.length)
+      (url1Variance / url1Values.length) + (url2Variance / url2Values.length)
     );
-    const tStat = Math.abs(previewMean - productionMean) / pooledStandardError;
+    const tStat = Math.abs(url1Mean - url2Mean) / pooledStandardError;
 
     // Calculate degrees of freedom (Welch–Satterthwaite equation)
     const df = Math.floor(
-      Math.pow(previewVariance / preview.length + productionVariance / production.length, 2) /
+      Math.pow(url1Variance / url1Values.length + url2Variance / url2Values.length, 2) /
       (
-        Math.pow(previewVariance / preview.length, 2) / (preview.length - 1) +
-        Math.pow(productionVariance / production.length, 2) / (production.length - 1)
+        Math.pow(url1Variance / url1Values.length, 2) / (url1Values.length - 1) +
+        Math.pow(url2Variance / url2Values.length, 2) / (url2Values.length - 1)
       )
     );
 
@@ -58,12 +58,12 @@ export const TbtStatisticalComparison = ({
     const pValue = 2 * (1 - normalCDF(tStat));
 
     return {
-      previewMean,
-      productionMean,
+      url1Mean,
+      url2Mean,
       pValue,
-      sampleSize: Math.min(preview.length, production.length),
+      sampleSize: Math.min(url1Values.length, url2Values.length),
     };
-  }, [previewData, productionData]);
+  }, [url1Data, url2Data]);
 
   // Recommended sample size calculation (for 80% power, alpha = 0.05, medium effect size)
   const recommendedSampleSize = 30;
@@ -84,12 +84,12 @@ export const TbtStatisticalComparison = ({
       <div className="grid gap-2">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="font-medium">{previewSiteName}</p>
-            <p className="text-gray-600">Mean: {stats.previewMean.toFixed(1)} ms</p>
+            <p className="font-medium">{url1Name}</p>
+            <p className="text-gray-600">Mean: {stats.url1Mean.toFixed(1)} ms</p>
           </div>
           <div>
-            <p className="font-medium">{productionSiteName}</p>
-            <p className="text-gray-600">Mean: {stats.productionMean.toFixed(1)} ms</p>
+            <p className="font-medium">{url2Name}</p>
+            <p className="text-gray-600">Mean: {stats.url2Mean.toFixed(1)} ms</p>
           </div>
         </div>
 

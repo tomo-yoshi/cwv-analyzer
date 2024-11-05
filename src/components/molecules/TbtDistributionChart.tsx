@@ -3,10 +3,10 @@ import { Bar, BarChart, CartesianGrid, Legend,XAxis, YAxis } from 'recharts';
 import type { TbtItem } from "@/types/pagespeed";
 
 interface TbtDistributionChartProps {
-  previewData: TbtItem[];
-  productionData: TbtItem[];
-  previewSiteName: string;
-  productionSiteName: string;
+  url1Data: TbtItem[];
+  url2Data: TbtItem[];
+  url1Name: string;
+  url2Name: string;
 }
 
 const SCORE_RANGES = [
@@ -22,8 +22,10 @@ const SCORE_RANGES = [
 ];
 
 export const TbtDistributionChart = ({
-  previewData,
-  productionData,
+  url1Data,
+  url2Data,
+  url1Name,
+  url2Name,
 }: TbtDistributionChartProps) => {
   const getDistribution = (data: TbtItem[]) => {
     const distribution = new Array(SCORE_RANGES.length).fill(0);
@@ -41,13 +43,13 @@ export const TbtDistributionChart = ({
     return distribution;
   };
 
-  const previewDistribution = getDistribution(previewData);
-  const productionDistribution = getDistribution(productionData);
+  const url1Distribution = getDistribution(url1Data);
+  const url2Distribution = getDistribution(url2Data);
 
   const chartData = SCORE_RANGES.map((range, index) => ({
     range: range.label,
-    preview: previewDistribution[index],
-    production: productionDistribution[index],
+    url1: url1Distribution[index],
+    url2: url2Distribution[index],
   }));
 
   return (
@@ -62,14 +64,14 @@ export const TbtDistributionChart = ({
       <YAxis domain={[0, 25]} />
       <Legend />
       <Bar
-        dataKey="preview"
-        name="[Prev] Num of Records"
+        dataKey="url1"
+        name={`[${url1Name}] Num of Records`}
         fill="#ff8787"
         barSize={20}
       />
       <Bar
-        dataKey="production"
-        name="[Prod] Num of Records"
+        dataKey="url2"
+        name={`[${url2Name}] Num of Records`}
         fill="#74c0fc"
         barSize={20}
       />

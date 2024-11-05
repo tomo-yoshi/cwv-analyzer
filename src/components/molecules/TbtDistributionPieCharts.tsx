@@ -2,10 +2,10 @@ import { PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
 import type { TbtItem } from "@/types/pagespeed";
 
 interface TbtDistributionPieChartsProps {
-  previewData: TbtItem[];
-  productionData: TbtItem[];
-  previewSiteName: string;
-  productionSiteName: string;
+  url1Data: TbtItem[];
+  url2Data: TbtItem[];
+  url1Name: string;
+  url2Name: string;
 }
 
 const SCORE_RANGES = [
@@ -20,8 +20,10 @@ const SCORE_RANGES = [
 const COLORS = ['#E8E8E8', '#D3D3D3', '#BEBEBE', '#A9A9A9', '#808080', '#696969'];
 
 export const TbtDistributionPieCharts = ({
-  previewData,
-  productionData,
+  url1Data,
+  url2Data,
+  url1Name,
+  url2Name,
 }: TbtDistributionPieChartsProps) => {
   const getDistributionData = (data: TbtItem[]) => {
     const distribution = SCORE_RANGES.map(range => ({
@@ -93,17 +95,17 @@ export const TbtDistributionPieCharts = ({
     );
   };
 
-  const previewDistribution = getDistributionData(previewData);
-  const productionDistribution = getDistributionData(productionData);
+  const url1Distribution = getDistributionData(url1Data);
+  const url2Distribution = getDistributionData(url2Data);
 
   return (
     <div className="flex flex-col gap-4">
       <div className="w-full">
-        <h3 className="text-center mb-2 text-base">Preview Site / Num of Records Ratio</h3>
+        <h3 className="text-center mb-2 text-base">{url1Name} / Num of Records Ratio</h3>
         <ResponsiveContainer width="100%" height={350}>
           <PieChart margin={{ top: 10, right: 80, bottom: 10, left: 80 }}>
             <Pie
-              data={previewDistribution}
+              data={url1Distribution}
               dataKey="value"
               nameKey="name"
               cx="50%"
@@ -112,7 +114,7 @@ export const TbtDistributionPieCharts = ({
               label={renderCustomizedLabel}
               labelLine={true}
             >
-              {previewDistribution.map((_, index) => (
+              {url1Distribution.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index]} />
               ))}
             </Pie>
@@ -121,11 +123,11 @@ export const TbtDistributionPieCharts = ({
       </div>
 
       <div className="w-full">
-        <h3 className="text-center mb-2 text-base">Production Site / Num of Records Ratio</h3>
+        <h3 className="text-center mb-2 text-base">{url2Name} / Num of Records Ratio</h3>
         <ResponsiveContainer width="100%" height={350}>
           <PieChart margin={{ top: 10, right: 80, bottom: 10, left: 80 }}>
             <Pie
-              data={productionDistribution}
+              data={url2Distribution}
               dataKey="value"
               nameKey="name"
               cx="50%"
@@ -134,7 +136,7 @@ export const TbtDistributionPieCharts = ({
               label={renderCustomizedLabel}
               labelLine={true}
             >
-              {productionDistribution.map((_, index) => (
+              {url2Distribution.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index]} />
               ))}
             </Pie>

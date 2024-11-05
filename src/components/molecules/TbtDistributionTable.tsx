@@ -1,10 +1,10 @@
 import type { TbtItem } from "@/types/pagespeed";
 
 interface TbtDistributionTableProps {
-  previewData: TbtItem[];
-  productionData: TbtItem[];
-  previewSiteName: string;
-  productionSiteName: string;
+  url1Data: TbtItem[];
+  url2Data: TbtItem[];
+  url1Name: string;
+  url2Name: string;
 }
 
 const SCORE_RANGES = [
@@ -20,10 +20,10 @@ const SCORE_RANGES = [
 ];
 
 export const TbtDistributionTable = ({
-  previewData,
-  productionData,
-  previewSiteName,
-  productionSiteName,
+  url1Data,
+  url2Data,
+  url1Name,
+  url2Name,
 }: TbtDistributionTableProps) => {
   const getDistribution = (data: TbtItem[]) => {
     const distribution = new Array(SCORE_RANGES.length).fill(0);
@@ -46,17 +46,17 @@ export const TbtDistributionTable = ({
     return { distribution, percentages };
   };
 
-  const preview = getDistribution(previewData);
-  const production = getDistribution(productionData);
+  const url1Stats = getDistribution(url1Data);
+  const url2Stats = getDistribution(url2Data);
 
   return (
     <div className="border-2">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b-2">
-            <th className="p-1 border-r-2">{previewSiteName}</th>
+            <th className="p-1 border-r-2">{url1Name}</th>
             <th className="p-1 border-r" colSpan={2}>Num of Records</th>
-            <th className="p-1 border-r-2">{productionSiteName}</th>
+            <th className="p-1 border-r-2">{url2Name}</th>
             <th className="p-1" colSpan={2}>Num of Records</th>
           </tr>
         </thead>
@@ -65,17 +65,17 @@ export const TbtDistributionTable = ({
             <tr key={range.label} className="border-b last:border-b-0">
               <td className="p-1 border-r-2">{range.label}</td>
               <td className="p-1 border-r text-center">
-                {preview.distribution[index]}
+                {url1Stats.distribution[index]}
               </td>
               <td className="p-1 border-r text-center text-gray-500">
-                {preview.percentages[index]}%
+                {url1Stats.percentages[index]}%
               </td>
               <td className="p-1 border-r-2">{range.label}</td>
               <td className="p-1 border-r text-center">
-                {production.distribution[index]}
+                {url2Stats.distribution[index]}
               </td>
               <td className="p-1 text-center text-gray-500">
-                {production.percentages[index]}%
+                {url2Stats.percentages[index]}%
               </td>
             </tr>
           ))}
