@@ -22,7 +22,7 @@ const TbtDashboard = () => {
   const [splitPosition, setSplitPosition] = useState(50);
   const [showTable, setShowTable] = useState(false);
   const [showChart, setShowChart] = useState(false);
-  const [showPieCharts, setShowPieCharts] = useState(true);
+  const [showPieCharts, setShowPieCharts] = useState(false);
 
   const { loadTestData } = useTestData();
   const { tbts1, tbts2, displayName1, displayName2 } = usePageSpeedStore();
