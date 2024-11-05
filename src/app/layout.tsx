@@ -1,11 +1,14 @@
 import { Metadata } from 'next';
 import * as React from 'react';
+import { Inter } from 'next/font/google';
 
-import '@/styles/globals.css';
+import './globals.css';
 // !STARTERCONF This is for demo purposes, remove @/styles/colors.css import immediately
 import '@/styles/colors.css';
 
 import { siteConfig } from '@/constant/config';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 
 // !STARTERCONF Change these default meta
 // !STARTERCONF Look at @/constant/config to change them
@@ -49,6 +52,8 @@ export const metadata: Metadata = {
   // ],
 };
 
+const inter = Inter({ subsets: ['latin'] });
+
 export default function RootLayout({
   children,
 }: {
@@ -56,10 +61,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-      </head>
-      <body suppressHydrationWarning={true}>{children}</body>
+      <body className={`flex flex-col min-h-screen ${inter.className}`}>
+        <Navbar />
+        <main className="flex-1">
+          {children}
+        </main>
+        <Footer />
+      </body>
     </html>
   );
 }

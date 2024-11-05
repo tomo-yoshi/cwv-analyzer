@@ -74,13 +74,13 @@ export const TbtDistributionChart = ({
       <Bar
         dataKey="url1"
         name={`[${url1Name}] Num of Records`}
-        fill="#ff8787"
+        fill="#74c0fc"  // Light blue
         barSize={20}
       />
       <Bar
         dataKey="url2"
         name={`[${url2Name}] Num of Records`}
-        fill="#74c0fc"
+        fill="#ff8787"  // Light red
         barSize={20}
       />
     </BarChart>

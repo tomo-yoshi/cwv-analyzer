@@ -16,14 +16,21 @@ const TbtDashboard = () => {
   const { tbts1, tbts2, displayName1, displayName2 } = usePageSpeedStore();
 
   return (
-    <div className="h-screen flex flex-col">
-      <header className="p-4 border-b">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">TBT Inspector</h1>
+    <div className="flex flex-col flex-1">
+      <div className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">TBT Inspector</h1>
+              <p className="mt-1 text-sm text-gray-500">
+                Compare and analyze Total Blocking Time metrics between two URLs
+              </p>
+            </div>
+          </div>
         </div>
-      </header>
+      </div>
 
-      <main className="flex-1">
+      <div className="flex-1 bg-gray-50">
         <Split
           // @ts-ignore
           initialPosition={splitPosition}
@@ -31,17 +38,25 @@ const TbtDashboard = () => {
           splitterSize="4px"
           className="h-full"
         >
-          <div className="h-full overflow-auto p-4">
-            <DualURLTBTConfig heading="Configuration" />
+          <div className="h-full overflow-auto bg-white">
+            <div className="max-w-3xl mx-auto p-6">
+              <DualURLTBTConfig 
+                heading="Configuration"
+              />
+            </div>
           </div>
-          <TbtAnalytics
-            url1Data={tbts1}
-            url2Data={tbts2}
-            url1Name={displayName1}
-            url2Name={displayName2}
-          />
+          <div className="h-full overflow-auto bg-white">
+            <div className="max-w-4xl mx-auto p-6">
+              <TbtAnalytics
+                url1Data={tbts1}
+                url2Data={tbts2}
+                url1Name={displayName1}
+                url2Name={displayName2}
+              />
+            </div>
+          </div>
         </Split>
-      </main>
+      </div>
     </div>
   );
 };
