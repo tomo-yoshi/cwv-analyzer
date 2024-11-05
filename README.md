@@ -1,8 +1,8 @@
-# Next.js + Tailwind CSS + TypeScript Starter and Boilerplate
+# CWV Analyzer and Boilerplate
 
 <div align="center">
   <h2>🔋 ts-nextjs-tailwind-starter</h2>
-  <p>Next.js + Tailwind CSS + TypeScript starter packed with useful development features.</p>
+  <p>CWV Analyzer packed with useful development features.</p>
   <p>Made by <a href="https://theodorusclarence.com">Theodorus Clarence</a></p>
 
 [![GitHub Repo stars](https://img.shields.io/github/stars/theodorusclarence/ts-nextjs-tailwind-starter)](https://github.com/theodorusclarence/ts-nextjs-tailwind-starter/stargazers)
