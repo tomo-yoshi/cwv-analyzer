@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { CreateOrganizationForm } from './CreateOrganizationForm';
+import { OrganizationCard } from './OrganizationCard';
 
 export default async function OrganizationPage() {
   const supabase = createClient();
@@ -24,8 +25,6 @@ export default async function OrganizationPage() {
     `)
     .eq('profile_id', user.id);
 
-  console.log('organizations', organizations)
-
   if (error) {
     console.error('Error fetching organizations:', error);
     return (
@@ -48,14 +47,15 @@ export default async function OrganizationPage() {
         <h2 className="text-xl font-semibold mb-4">Your Organizations</h2>
         <div className="grid gap-4">
           {organizations?.map((org) => (
-            <div 
-              key={org.organization_id} 
-              className="p-4 border rounded-lg shadow-sm"
-            >
-              {/* @ts-ignore */}
-              <div className="font-medium">{org.organizations.name}</div>
-              <div className="text-sm text-gray-500">Role: {org.role}</div>
-            </div>
+            <OrganizationCard
+              key={org.organization_id}
+              organization={{
+                id: org.organization_id,
+                // @ts-ignore
+                name: org.organizations.name
+              }}
+              role={org.role}
+            />
           ))}
         </div>
       </div>
