@@ -1,30 +1,20 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
 import { Session } from '@supabase/supabase-js';
 import { useState } from 'react';
 import { useOrganizationStore } from '@/store/organizationStore';
 import { LoadingOverlay } from '@/components/ui/LoadingOverlay';
+import { signout } from '@/app/auth/actions';
 
-export function NavbarClient() {
-  const [session, setSession] = useState<Session | null>(null);
+export function NavbarClient({ session }: { session: Session | null }) {
   const router = useRouter();
-  const supabase = createClient();
-    supabase.auth.getSession().then(({ data: { session } }) => {
-    setSession(session);
-  });
-
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true);
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Error signing out:', error);
-        return;
-      }
+      await signout();
       useOrganizationStore.getState().reset();
     } catch (error) {
       console.error('Error:', error);

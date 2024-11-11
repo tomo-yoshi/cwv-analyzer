@@ -1,9 +1,9 @@
-'use client';
-
 import { NavbarClient } from './NavbarClient';
 import { ProjectSelector } from '../ProjectSelector';
+import { createClient } from '@/lib/supabase/server';
 
-export function Navbar() {
+export async function Navbar() {
+  const { data: session } = await createClient().auth.getSession();
   return (
     <nav className="border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -14,7 +14,7 @@ export function Navbar() {
             </a>
             <ProjectSelector />
           </div>
-          <NavbarClient />
+          <NavbarClient session={session?.session} />
         </div>
       </div>
     </nav>

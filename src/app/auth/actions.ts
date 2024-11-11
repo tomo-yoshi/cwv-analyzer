@@ -87,3 +87,15 @@ export async function signup(_: State, formData: FormData) {
     };
   }
 }
+
+export async function signout() {
+  const supabase = createClient();
+  const { error } = await supabase.auth.signOut();
+  
+  if (error) {
+    return { message: ['Auth Error: Failed to Sign Out', error.message] };
+  }
+
+  revalidatePath('/', 'layout');
+  redirect('/');
+}
