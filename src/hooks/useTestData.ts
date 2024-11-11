@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { usePageSpeedStore } from '@/stores/usePageSpeedStore';
+import { usePageSpeedStore } from '@/store/usePageSpeedStore';
 import type { TbtItem } from '@/types/pagespeed';
 
 const generateMockTbtData = (count: number, isPreview = true): TbtItem[] => {

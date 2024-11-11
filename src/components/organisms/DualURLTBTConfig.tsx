@@ -7,7 +7,7 @@ import CombinedInput from '@/components/molecules/CombinedInput';
 
 import type{ DateTimeFormatOptions } from '@/types';
 import type { PagespeedApiRes, TbtItem } from '@/types/pagespeed';
-import { usePageSpeedStore } from '@/stores/usePageSpeedStore';
+import { usePageSpeedStore } from '@/store/usePageSpeedStore';
 
 
 interface DualURLTBTConfigProps {
