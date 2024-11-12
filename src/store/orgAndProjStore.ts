@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 export interface Organization {
   id: string;
@@ -17,20 +16,21 @@ interface OrgAndProjStore {
   selectedProject: Project | null;
   setSelectedOrganization: (org: Organization | null) => void;
   setSelectedProject: (project: Project | null) => void;
-  reset: () => void;
 }
 
-export const useOrgAndProjStore = create<OrgAndProjStore>()(
-  persist(
-    (set) => ({
-      selectedOrganization: null,
-      selectedProject: null,
-      setSelectedOrganization: (org) => set({ selectedOrganization: org, selectedProject: null }),
-      setSelectedProject: (project) => set({ selectedProject: project }),
-      reset: () => set({ selectedOrganization: null, selectedProject: null }),
-    }),
-    {
-      name: 'organization-storage',
-    }
-  )
-); 
+export const useOrgAndProjStore = create<OrgAndProjStore>((set) => ({
+  selectedOrganization: typeof window !== 'undefined' 
+    ? JSON.parse(localStorage.getItem('selectedOrganization') || 'null')
+    : null,
+  selectedProject: typeof window !== 'undefined'
+    ? JSON.parse(localStorage.getItem('selectedProject') || 'null')
+    : null,
+  setSelectedOrganization: (org) => {
+    localStorage.setItem('selectedOrganization', JSON.stringify(org));
+    set({ selectedOrganization: org });
+  },
+  setSelectedProject: (project) => {
+    localStorage.setItem('selectedProject', JSON.stringify(project));
+    set({ selectedProject: project });
+  },
+}));

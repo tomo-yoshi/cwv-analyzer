@@ -20,33 +20,77 @@ const formSchema = z.object({
   lastName: z.string().optional(),
 });
 
-export async function login(_: State, formData: FormData) {
-  const result = formSchema.safeParse(Object.fromEntries(formData.entries()));
-
-  if (result.success) {
+export async function login(prevState: { message: string[] }, formData: FormData) {
+  try {
     const supabase = createClient();
+    
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
 
-    // type-casting here for convenience
-    // in practice, you should validate your inputs
-    const data = {
-      email: formData.get('email') as string,
-      password: formData.get('password') as string,
-    };
+    const { error: signInError, data: { user } } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    const { error } = await supabase.auth.signInWithPassword(data);
-
-    if (error) {
-      return { message: ['Auth Error: Failed to Log In', error.message] };
+    if (signInError) {
+      return {
+        message: [signInError.message],
+      };
     }
 
-    revalidatePath('/', 'layout');
+    if (!user) {
+      return {
+        message: ['User not found'],
+      };
+    }
+
+    // Fetch user's organizations and their roles
+    const { data: memberships, error: membershipError } = await supabase
+      .from('organization_members')
+      .select(`
+        organization_id,
+        role,
+        organizations (
+          id,
+          name,
+          projects (
+            id,
+            name,
+            organization_id
+          )
+        )
+      `)
+      .eq('profile_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (membershipError) {
+      console.error('Error fetching organizations:', membershipError);
+      return {
+        message: ['Error fetching user data'],
+      };
+    }
+
+    // If user has organizations, set the first one and its first project
+    if (memberships && memberships.length > 0) {
+      const firstOrg = memberships[0].organizations;
+      // @ts-ignore
+      const firstProject = firstOrg.projects[0];
+
+      if (firstOrg && firstProject) {
+        // Store selected organization and project in localStorage
+        // This is needed because the store will be reset on page load
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('selectedOrganization', JSON.stringify(firstOrg));
+          localStorage.setItem('selectedProject', JSON.stringify(firstProject));
+        }
+      }
+    }
+
     redirect('/');
-  } else {
-    const emailError = result.error.format().email?._errors[0];
-    const pwError = result.error.format().password?._errors[0];
-    const errors = [emailError, pwError].filter((err) => err !== undefined);
+  } catch (error) {
+    console.error('Login error:', error);
     return {
-      message: errors,
+      message: ['An error occurred during login. Please try again.'],
     };
   }
 }

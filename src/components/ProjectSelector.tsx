@@ -1,56 +1,101 @@
+// @ts-nocheck
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useOrgAndProjStore, Organization, Project } from '@/store/orgAndProjStore';
 import { createClient } from '@/lib/supabase/client';
-import { useOrgAndProjStore } from '@/store/orgAndProjStore';
-
-interface Project {
-  id: string;
-  name: string;
-  organization_id: string;
-  organizationId: string;
-}
 
 export function ProjectSelector() {
+  const { 
+    selectedOrganization, 
+    selectedProject,
+    setSelectedOrganization,
+    setSelectedProject 
+  } = useOrgAndProjStore();
+
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-  const { selectedOrganization, selectedProject, setSelectedProject } = useOrgAndProjStore();
-  const supabase = createClient();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!selectedOrganization) {
-      return;
-    }
+    const fetchOrganizationsAndProjects = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
 
-    const fetchProjects = async () => {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('organization_id', selectedOrganization.id);
+      if (!user) return;
 
-      if (!error && data) {
-        const mappedProjects = data.map(p => ({
-          ...p,
-          organizationId: p.organization_id
-        }));
-        setProjects(mappedProjects);
-        
-        // If no project is selected, select the first one
-        if (!selectedProject && mappedProjects.length > 0) {
-          setSelectedProject(mappedProjects[0]);
+      const { data: memberships } = await supabase
+        .from('organization_members')
+        .select(`
+          organizations (
+            id,
+            name,
+            projects (
+              id,
+              name,
+              organization_id
+            )
+          )
+        `)
+        .eq('profile_id', user.id);
+
+      if (memberships) {
+        const orgs = memberships.map(m => m.organizations);
+        setOrganizations(orgs);
+
+        // Set first org and project if none selected
+        if (!selectedOrganization && orgs.length > 0) {
+          const firstOrg = orgs[0];
+          setSelectedOrganization(firstOrg);
+          
+          if (firstOrg.projects.length > 0) {
+            setSelectedProject(firstOrg.projects[0]);
+          }
         }
       }
+      setLoading(false);
     };
 
-    fetchProjects();
-  }, [selectedOrganization, selectedProject, setSelectedProject]);
+    fetchOrganizationsAndProjects();
+  }, [selectedOrganization, setSelectedOrganization, setSelectedProject]);
 
-  if (!selectedOrganization) {
-    return null;
+  // Update projects when organization changes
+  useEffect(() => {
+    if (selectedOrganization) {
+      const org = organizations.find(o => o.id === selectedOrganization.id);
+      if (org) {
+        setProjects(org.projects);
+      }
+    }
+  }, [selectedOrganization, organizations]);
+
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-sm text-gray-500">{selectedOrganization.name}</span>
+    <div className="flex gap-4">
+      <select
+        value={selectedOrganization?.id || ''}
+        onChange={(e) => {
+          const org = organizations.find(o => o.id === e.target.value);
+          if (org) {
+            setSelectedOrganization(org);
+            if (org.projects.length > 0) {
+              setSelectedProject(org.projects[0]);
+            }
+          }
+        }}
+        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+      >
+        <option value="" disabled>Select Organization</option>
+        {organizations.map((org) => (
+          <option key={org.id} value={org.id}>
+            {org.name}
+          </option>
+        ))}
+      </select>
+
       <select
         value={selectedProject?.id || ''}
         onChange={(e) => {
@@ -59,9 +104,9 @@ export function ProjectSelector() {
             setSelectedProject(project);
           }
         }}
-        className="block w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        required
+        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
       >
+        <option value="" disabled>Select Project</option>
         {projects.map((project) => (
           <option key={project.id} value={project.id}>
             {project.name}
@@ -70,4 +115,4 @@ export function ProjectSelector() {
       </select>
     </div>
   );
-} 
+}

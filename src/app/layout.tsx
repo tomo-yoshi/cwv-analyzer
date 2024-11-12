@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import * as React from 'react';
 import { Inter } from 'next/font/google';
+import { StoreInitializer } from '@/components/providers/StoreInitializer';
 
 import './globals.css';
 // !STARTERCONF This is for demo purposes, remove @/styles/colors.css import immediately
@@ -63,6 +64,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`flex flex-col min-h-screen ${inter.className}`}>
+        <StoreInitializer />
         <Navbar />
         <div className="flex min-h-screen">
           <Sidebar />
