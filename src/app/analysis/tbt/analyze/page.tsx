@@ -1,10 +1,15 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
-import { Split } from '@geoffcox/react-splitter';
 import { createClient } from '@/lib/supabase/client';
 import { useOrgAndProjStore } from '@/store/orgAndProjStore';
 import TbtAnalytics from '@/components/organisms/TbtAnalytics';
+
+const Split = dynamic(
+  () => import('@geoffcox/react-splitter').then(mod => mod.Split),
+  { ssr: false }
+);
 
 interface TbtRecord {
   id: string;
@@ -25,7 +30,6 @@ export default function AnalyzePage() {
   const [records, setRecords] = useState<TbtRecord[]>([]);
   const [selectedRecords, setSelectedRecords] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -62,36 +66,6 @@ export default function AnalyzePage() {
       return [...prev, recordId];
     });
   };
-
-  useEffect(() => {
-    const supabase = createClient();
-    
-    const checkAuth = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        setIsLoggedIn(!!user);
-      } catch (error) {
-        console.error('Auth check error:', error);
-        setIsLoggedIn(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    checkAuth();
-  }, []);
-
-  if (loading) {
-    return <div className="p-8 text-center">Loading...</div>;
-  }
-
-  if (!isLoggedIn) {
-    return (
-      <div className="p-8 text-center">
-        <p>Please log in to access this page</p>
-      </div>
-    );
-  }
 
   if (!selectedProject) {
     return (
