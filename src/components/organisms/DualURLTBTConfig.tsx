@@ -211,7 +211,7 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
         </div>
         <div className='grid grid-cols-2 gap-4'>
           <CombinedInput
-            label="Number Records (1-100)"
+            label="Number of Records (1-100)"
             placeholder="Enter a number"
             value={numOfRecords}
             onChange={(value) => setNumOfRecords(Number(value))}
