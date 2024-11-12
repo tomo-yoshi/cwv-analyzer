@@ -290,14 +290,14 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
           <VisibilityToggle
             isVisible={columnVisibility.url1}
             onToggle={() => toggleColumn('url1')}
-            label={isDualMode ? 'URL 1' : 'Results'}
+            label={isDualMode ? displayName1 : 'Results'}
           />
           
           {isDualMode && (
             <VisibilityToggle
               isVisible={columnVisibility.url2}
               onToggle={() => toggleColumn('url2')}
-              label="URL 2"
+              label={displayName2}
             />
           )}
         </div>
