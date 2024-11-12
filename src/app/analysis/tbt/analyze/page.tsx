@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { Split } from '@geoffcox/react-splitter';
 import { createClient } from '@/lib/supabase/client';
 import { useOrgAndProjStore } from '@/store/orgAndProjStore';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import TbtAnalytics from '@/components/organisms/TbtAnalytics';
 
 interface TbtRecord {
@@ -26,6 +25,7 @@ export default function AnalyzePage() {
   const [records, setRecords] = useState<TbtRecord[]>([]);
   const [selectedRecords, setSelectedRecords] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -63,19 +63,28 @@ export default function AnalyzePage() {
     });
   };
 
-  const getChartData = () => {
-    const selectedData = records.filter(record => selectedRecords.includes(record.id));
-    if (selectedData.length === 0) return [];
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsLoggedIn(!!user);
+      setLoading(false);
+    };
+    
+    checkAuth();
+  }, []);
 
-    return selectedData[0].records.map((_, index) => {
-      const dataPoint: any = { name: `Record ${index + 1}` };
-      selectedData.forEach(record => {
-        dataPoint[record.display_name] = 
-          Math.floor(record.records[index]?.result.numericValue) || null;
-      });
-      return dataPoint;
-    });
-  };
+  if (loading) {
+    return <div className="p-8 text-center">Loading...</div>;
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <div className="p-8 text-center">
+        <p>Please log in to access this page</p>
+      </div>
+    );
+  }
 
   if (!selectedProject) {
     return (
