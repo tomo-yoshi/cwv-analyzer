@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { HiHome, HiClock, HiOfficeBuilding, HiBriefcase } from 'react-icons/hi';
+import { HiHome, HiClock, HiOfficeBuilding, HiBriefcase, HiCog } from 'react-icons/hi';
 import clsx from 'clsx';
 import { Session } from '@supabase/supabase-js';
 
@@ -25,15 +25,21 @@ export function SidebarClient({ initialSession }: SidebarClientProps) {
       icon: HiClock 
     },
     ...(initialSession ? [
+      // { 
+      //   name: 'Organization', 
+      //   href: '/organization', 
+      //   icon: HiOfficeBuilding 
+      // },
+      // { 
+      //   name: 'Projects', 
+      //   href: '/projects', 
+      //   icon: HiBriefcase
+      // },
       { 
-        name: 'Organization', 
-        href: '/organization', 
-        icon: HiOfficeBuilding 
-      },
-      { 
-        name: 'Projects', 
-        href: '/projects', 
-        icon: HiBriefcase
+        name: 'Settings', 
+        href: '/settings',
+        class: '',
+        icon: HiCog
       },
     ] : [])
   ];
@@ -47,22 +53,27 @@ export function SidebarClient({ initialSession }: SidebarClientProps) {
       <div
         className={clsx(
           'h-full bg-white border-r shadow-lg transition-all duration-300 overflow-hidden',
-          isHovered ? 'w-60' : 'w-16'
+          isHovered ? 'w-56' : 'w-16'
         )}
       >
-        <nav className="py-6 px-5">
+        <nav className="py-6 px-5 grid items-start">
           {menuItems.map((item) => (
             <Link
               key={item.name}
               href={item.href}
-              className="flex h-12 items-center text-gray-700 hover:bg-gray-100 transition-colors"
+              className="flex h-12 items-center text-gray-700 transition-colors hover:text-primary-500"
             >
-              <div className="flex items-center justify-center w-16 h-full">
+              <div
+                className={clsx(
+                  "flex items-center justify-center",
+                  item.class
+                )}
+                >
                 <item.icon className="w-6 h-6" />
               </div>
               <span 
                 className={clsx(
-                  'whitespace-nowrap font-medium transition-opacity duration-300',
+                  'whitespace-nowrap font-medium transition-opacity duration-300 pl-4',
                   isHovered ? 'opacity-100' : 'opacity-0'
                 )}
               >

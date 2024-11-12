@@ -62,7 +62,7 @@ export default async function ProjectsPage() {
   }, {} as Record<string, { name: string; projects: any[] }>);
 
   return (
-    <div className="max-w-4xl mx-auto p-6 pl-20">
+    <div className="max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Projects</h1>
       
       <div className="mb-8">
@@ -77,7 +77,7 @@ export default async function ProjectsPage() {
             <h3 className="text-lg font-medium mb-4 text-gray-700">
               {org.name}
             </h3>
-            <div className="grid gap-4 pl-4">
+            <div className="grid gap-4">
               {org.projects.map((project) => (
                 <ProjectCard
                   key={project.id}

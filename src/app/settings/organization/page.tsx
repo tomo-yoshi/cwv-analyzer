@@ -35,7 +35,7 @@ export default async function OrganizationPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 pl-20">
+    <div className="max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Organizations</h1>
       
       <div className="mb-8">
