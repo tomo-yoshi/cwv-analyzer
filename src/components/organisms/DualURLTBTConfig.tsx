@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 
 import Button from '@/components/atoms/buttons/Button';
 import Select from '@/components/atoms/selects/Select'; 
-import { Switch } from '@/components/atoms/switches/Switch';  // Assuming you have a Switch component
+import { Switch } from '@/components/atoms/switches/Switch';
+import { VisibilityToggle } from '@/components/atoms/buttons/VisibilityToggle';
 import CombinedInput from '@/components/molecules/CombinedInput';
 
 import type{ DateTimeFormatOptions } from '@/types';
@@ -35,6 +36,18 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
   const [scan, setScan] = useState(false);
   const [numOfRecords, setNumOfRecords] = useState(30);
   const [showTimestamp, setShowTimestamp] = useState(false);
+  const [columnVisibility, setColumnVisibility] = useState({
+    number: true,
+    url1: true,
+    url2: true
+  });
+
+  const toggleColumn = (column: keyof typeof columnVisibility) => {
+    setColumnVisibility(prev => ({
+      ...prev,
+      [column]: !prev[column]
+    }));
+  };
 
   const handleResetRecords = () => {
     if (window.confirm('Are you sure you want to reset all records?')) {
@@ -198,7 +211,7 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
         </div>
         <div className='grid grid-cols-2 gap-4'>
           <CombinedInput
-            label="Number Records (1-100)"
+            label="Number of Records (1-100)"
             placeholder="Enter a number"
             value={numOfRecords}
             onChange={(value) => setNumOfRecords(Number(value))}
@@ -257,24 +270,67 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
         </div>
       </div>
 
+      <div className='mb-4 flex items-center gap-4'>
+        {/* <div className='flex items-center gap-2'>
+          <Switch
+            checked={showTimestamp}
+            onChange={setShowTimestamp}
+            aria-label="Toggle timestamp"
+          />
+          <span className='text-sm'>{showTimestamp ? 'Hide Timestamp' : 'Show Timestamp'}</span>
+        </div> */}
+        
+        <div className='flex items-center gap-4 ml-4'>
+          <VisibilityToggle
+            isVisible={columnVisibility.number}
+            onToggle={() => toggleColumn('number')}
+            label="#"
+          />
+          
+          <VisibilityToggle
+            isVisible={columnVisibility.url1}
+            onToggle={() => toggleColumn('url1')}
+            label={isDualMode ? displayName1 : 'Results'}
+          />
+          
+          {isDualMode && (
+            <VisibilityToggle
+              isVisible={columnVisibility.url2}
+              onToggle={() => toggleColumn('url2')}
+              label={displayName2}
+            />
+          )}
+        </div>
+      </div>
+
       <div className='mb-4 border-2'>
         <div className='max-h-[400px] overflow-auto'>
           <table className='w-full'>
             <thead className='sticky top-0 bg-white'>
               <tr className='border-b-2'>
-                <th className='border-r-2 w-16'>#</th>
-                <th colSpan={showTimestamp ? 2 : 1} className='border-r-2'>
-                  {isDualMode ? displayName1 : 'Results'}
-                </th>
-                {isDualMode && (
+                {columnVisibility.number && (
+                  <th className='border-r-2 w-16'>#</th>
+                )}
+                {columnVisibility.url1 && (
+                  <th colSpan={showTimestamp ? 2 : 1} className='border-r-2'>
+                    {isDualMode ? displayName1 : 'Results'}
+                  </th>
+                )}
+                {isDualMode && columnVisibility.url2 && (
                   <th colSpan={showTimestamp ? 2 : 1}>{displayName2}</th>
                 )}
               </tr>
               <tr className='border-b-2'>
-                <th className='border-r-2'></th>
-                {showTimestamp && <th className='border-r'>Timestamp</th>}
-                <th className={isDualMode ? 'border-r-2' : ''}>TBT (ms)</th>
-                {isDualMode && (
+                {columnVisibility.number && (
+                  <th className='border-r-2'></th>
+                )}
+                {columnVisibility.url1 && (
+                  <>
+                    {showTimestamp && <th className='border-r'>Timestamp</th>}
+                    <th className={isDualMode ? 'border-r-2' : ''}>TBT (ms)</th>
+                  </>
+                )}
+                {isDualMode && columnVisibility.url2 && (
                   <>
                     {showTimestamp && <th className='border-r'>Timestamp</th>}
                     <th>TBT (ms)</th>
@@ -285,12 +341,18 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
             <tbody>
               {Array.from({ length: Math.max(tbts1.length, isDualMode ? tbts2.length : 0) }).map((_, index) => (
                 <tr key={index} className='border-b'>
-                  <td className='border-r-2 text-center text-gray-500'>{index + 1}</td>
-                  {showTimestamp && <td className='border-r text-center'>{tbts1[index]?.timeStamp}</td>}
-                  <td className={isDualMode ? 'border-r-2 text-center' : 'text-center'}>
-                    {Math.floor(tbts1[index]?.result.numericValue) || '-'}
-                  </td>
-                  {isDualMode && (
+                  {columnVisibility.number && (
+                    <td className='border-r-2 text-center text-gray-500'>{index + 1}</td>
+                  )}
+                  {columnVisibility.url1 && (
+                    <>
+                      {showTimestamp && <td className='border-r text-center'>{tbts1[index]?.timeStamp}</td>}
+                      <td className={isDualMode ? 'border-r-2 text-center' : 'text-center'}>
+                        {Math.floor(tbts1[index]?.result.numericValue) || '-'}
+                      </td>
+                    </>
+                  )}
+                  {isDualMode && columnVisibility.url2 && (
                     <>
                       {showTimestamp && <td className='border-r text-center'>{tbts2[index]?.timeStamp}</td>}
                       <td className='text-center'>{Math.floor(tbts2[index]?.result.numericValue) || '-'}</td>
