@@ -9,7 +9,8 @@ import CombinedInput from '@/components/molecules/CombinedInput';
 import type{ DateTimeFormatOptions } from '@/types';
 import type { PagespeedApiRes, TbtItem } from '@/types/pagespeed';
 import { usePageSpeedStore } from '@/store/usePageSpeedStore';
-
+import { createClient } from '@/lib/supabase/client';
+import { useOrgAndProjStore } from '@/store/orgAndProjStore';
 
 interface DualURLTBTConfigProps {
   heading?: string;
@@ -27,6 +28,7 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
     setDisplayName2, 
     resetTbts 
   } = usePageSpeedStore();
+  const { selectedProject } = useOrgAndProjStore();
 
   const [url1, setUrl1] = useState('');
   const [url2, setUrl2] = useState('');
@@ -40,7 +42,51 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
     number: true,
     url1: true,
     url2: true
-  });
+  });  
+  const [isSaving1, setIsSaving1] = useState(false);
+  const [isSaving2, setIsSaving2] = useState(false);
+
+  const handleSaveRecord = async (
+    displayName: string,
+    url: string,
+    records: TbtItem[],
+    setSaving: (saving: boolean) => void
+  ) => {
+    if (!selectedProject) {
+      alert('Please select a project first');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const supabase = createClient();
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('Please sign in to save records');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('tbt_records')
+        .insert({
+          display_name: displayName,
+          url: url,
+          records: records,
+          strategy: strategy,
+          project_id: selectedProject.id,
+          profile_id: user.id
+        });
+
+      if (error) throw error;
+      alert('Records saved successfully!');
+    } catch (error) {
+      console.error('Error saving records:', error);
+      alert('Failed to save records');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const toggleColumn = (column: keyof typeof columnVisibility) => {
     setColumnVisibility(prev => ({
@@ -270,6 +316,30 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
         </div>
       </div>
 
+      <div className='mb-4 grid gap-4'>
+        <div className='flex gap-4'>
+          {tbts1.length > 0 && (
+            <Button
+              variant='outline'
+              isLoading={isSaving1}
+              onClick={() => handleSaveRecord(displayName1, url1, tbts1, setIsSaving1)}
+            >
+              Save {displayName1} Records
+            </Button>
+          )}
+          
+          {isDualMode && tbts2.length > 0 && (
+            <Button
+              variant='outline'
+              isLoading={isSaving2}
+              onClick={() => handleSaveRecord(displayName2, url2, tbts2, setIsSaving2)}
+            >
+              Save {displayName2} Records
+            </Button>
+          )}
+        </div>
+      </div>
+
       <div className='mb-4 flex items-center gap-4'>
         {/* <div className='flex items-center gap-2'>
           <Switch
@@ -348,14 +418,14 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
                     <>
                       {showTimestamp && <td className='border-r text-center'>{tbts1[index]?.timeStamp}</td>}
                       <td className={isDualMode ? 'border-r-2 text-center' : 'text-center'}>
-                        {Math.floor(tbts1[index]?.result.numericValue) || '-'}
+                        {Math.floor(tbts1[index]?.result.numericValue as number) || '-'}
                       </td>
                     </>
                   )}
                   {isDualMode && columnVisibility.url2 && (
                     <>
                       {showTimestamp && <td className='border-r text-center'>{tbts2[index]?.timeStamp}</td>}
-                      <td className='text-center'>{Math.floor(tbts2[index]?.result.numericValue) || '-'}</td>
+                      <td className='text-center'>{Math.floor(tbts2[index]?.result.numericValue as number) || '-'}</td>
                     </>
                   )}
                 </tr>

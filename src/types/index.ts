@@ -13,3 +13,19 @@ export interface DateTimeFormatOptions {
   hour12?: boolean;
   timeZone?: string;
 }
+
+export interface TbtRecord {
+  id: string;
+  display_name: string;
+  url: string;
+  records: Array<{
+    timeStamp: string;
+    result: {
+      numericValue: number;
+    };
+  }>;
+  strategy: 'mobile' | 'desktop';
+  created_at: string;
+  project_id: string;
+  profile_id: string;
+}

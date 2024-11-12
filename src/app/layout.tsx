@@ -68,7 +68,7 @@ export default function RootLayout({
         <Navbar />
         <div className="flex min-h-screen">
           <Sidebar />
-          <main className="flex-1 ml-12">
+          <main className="flex-1 ml-12 mt-16">
             {children}
           </main>
         </div>

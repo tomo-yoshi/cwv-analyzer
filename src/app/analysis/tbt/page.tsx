@@ -1,64 +1,47 @@
-"use client"
+import Link from 'next/link';
+import { createClient } from '@/lib/supabase/server';
 
-import { useState } from 'react';
-import dynamic from 'next/dynamic';
-import { usePageSpeedStore } from '@/store/usePageSpeedStore';
-import DualURLTBTConfig from '@/components/organisms/DualURLTBTConfig';
-import TbtAnalytics from '@/components/organisms/TbtAnalytics';
-
-const Split = dynamic(
-  () => import('@geoffcox/react-splitter').then(mod => mod.Split),
-  { ssr: false }
-);
-
-const TbtDashboard = () => {
-  const [splitPosition, setSplitPosition] = useState(50);
-  const { tbts1, tbts2, displayName1, displayName2 } = usePageSpeedStore();
+export default async function TbtPage() {
+  const { data: session } = await createClient().auth.getSession();
+  const isLoggedIn = !!session.session;
 
   return (
-    <div className="flex flex-col flex-1 p-6">
-      <div className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900">TBT Inspector</h1>
-              <p className="mt-1 text-sm text-gray-500">
-                Compare and analyze Total Blocking Time metrics between two URLs
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex-1 bg-gray-50">
-        <Split
-          // @ts-ignore
-          initialPosition={splitPosition}
-          onPositionChanged={setSplitPosition}
-          splitterSize="4px"
-          className="h-full"
+    <div className="p-8">
+      <h1 className="text-2xl font-bold mb-6">Total Blocking Time Analysis</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Link 
+          href="/analysis/tbt/inspect"
+          className="block p-6 bg-white rounded-lg border border-gray-200 hover:border-primary-500 transition-colors"
         >
-          <div className="h-full overflow-auto bg-white">
-            <div className="max-w-3xl mx-auto p-6">
-              <DualURLTBTConfig 
-                heading="Configuration"
-              />
-            </div>
+          <h2 className="text-xl font-semibold mb-2">Inspect Page</h2>
+          <p className="text-gray-600">
+            Run TBT analysis on specific URLs and save the results
+          </p>
+        </Link>
+
+        {isLoggedIn ? (
+          <Link 
+            href="/analysis/tbt/analyze"
+            className="block p-6 bg-white rounded-lg border border-gray-200 hover:border-primary-500 transition-colors"
+          >
+            <h2 className="text-xl font-semibold mb-2">Analyze Records</h2>
+            <p className="text-gray-600">
+              Compare and analyze TBT records with interactive charts
+            </p>
+          </Link>
+        ) : (
+          <div className="block p-6 bg-gray-50 rounded-lg border border-gray-200">
+            <h2 className="text-xl font-semibold mb-2 text-gray-400">Analyze Records</h2>
+            <p className="text-gray-500">
+              Compare and analyze TBT records with interactive charts
+            </p>
+            <p className="text-sm text-red-500 mt-2">
+              Please log in to access this feature
+            </p>
           </div>
-          <div className="h-full overflow-auto bg-white">
-            <div className="max-w-4xl mx-auto p-6">
-              <TbtAnalytics
-                url1Data={tbts1}
-                url2Data={tbts2}
-                url1Name={displayName1}
-                url2Name={displayName2}
-              />
-            </div>
-          </div>
-        </Split>
+        )}
       </div>
     </div>
   );
-};
-
-export default TbtDashboard;
+}

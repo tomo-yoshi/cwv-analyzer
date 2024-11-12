@@ -20,7 +20,7 @@ export function SidebarClient({ initialSession }: SidebarClientProps) {
       icon: HiHome 
     },
     { 
-      name: 'TBT Inspector', 
+      name: 'TBT Analysis', 
       href: '/analysis/tbt', 
       icon: HiClock 
     },
