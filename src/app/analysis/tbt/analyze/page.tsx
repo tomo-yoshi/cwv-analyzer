@@ -64,11 +64,18 @@ export default function AnalyzePage() {
   };
 
   useEffect(() => {
+    const supabase = createClient();
+    
     const checkAuth = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      setIsLoggedIn(!!user);
-      setLoading(false);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setIsLoggedIn(!!user);
+      } catch (error) {
+        console.error('Auth check error:', error);
+        setIsLoggedIn(false);
+      } finally {
+        setLoading(false);
+      }
     };
     
     checkAuth();
