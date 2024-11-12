@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { HiHome, HiClock, HiOfficeBuilding, HiBriefcase, HiCog } from 'react-icons/hi';
+import { HiHome, HiClock, HiCog } from 'react-icons/hi';
 import clsx from 'clsx';
 import { Session } from '@supabase/supabase-js';
 
@@ -25,16 +25,6 @@ export function SidebarClient({ initialSession }: SidebarClientProps) {
       icon: HiClock 
     },
     ...(initialSession ? [
-      // { 
-      //   name: 'Organization', 
-      //   href: '/organization', 
-      //   icon: HiOfficeBuilding 
-      // },
-      // { 
-      //   name: 'Projects', 
-      //   href: '/projects', 
-      //   icon: HiBriefcase
-      // },
       { 
         name: 'Settings', 
         href: '/settings',
