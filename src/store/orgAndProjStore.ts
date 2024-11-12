@@ -1,18 +1,18 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-interface Organization {
+export interface Organization {
   id: string;
   name: string;
 }
 
-interface Project {
+export interface Project {
   id: string;
   name: string;
   organizationId: string;
 }
 
-interface OrganizationStore {
+interface OrgAndProjStore {
   selectedOrganization: Organization | null;
   selectedProject: Project | null;
   setSelectedOrganization: (org: Organization | null) => void;
@@ -20,7 +20,7 @@ interface OrganizationStore {
   reset: () => void;
 }
 
-export const useOrganizationStore = create<OrganizationStore>()(
+export const useOrgAndProjStore = create<OrgAndProjStore>()(
   persist(
     (set) => ({
       selectedOrganization: null,

@@ -7,7 +7,7 @@ export async function createOrganization(name: string, userId: string) {
   const supabase = createClient();
   
   try {
-    // Start a transaction
+    // Start a transaction for organization creation
     const { data: org, error: orgError } = await supabase
       .from('organizations')
       .insert({ name })
@@ -27,8 +27,24 @@ export async function createOrganization(name: string, userId: string) {
 
     if (memberError) throw memberError;
 
+    // Create default project
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .insert({
+        name: 'Default Project',
+        organization_id: org.id
+      })
+      .select()
+      .single();
+
+    if (projectError) throw projectError;
+
     revalidatePath('/organization');
-    return { success: true };
+    return { 
+      success: true, 
+      organization: org, 
+      project: project 
+    };
   } catch (error) {
     console.error('Error creating organization:', error);
     return { success: false, error };

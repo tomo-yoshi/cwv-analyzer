@@ -1,31 +1,27 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { Session } from '@supabase/supabase-js';
 import { useState } from 'react';
-import { useOrganizationStore } from '@/store/organizationStore';
+import { useOrgAndProjStore } from '@/store/orgAndProjStore';
 import { LoadingOverlay } from '@/components/ui/LoadingOverlay';
 import { signout } from '@/app/auth/actions';
 import Link from 'next/link';
+import { useInitialState } from '@/hooks/useInitialState';
 
 export function NavbarClient({ session }: { session: Session | null }) {
-  const router = useRouter();
   const [isSigningOut, setIsSigningOut] = useState(false);
+  useInitialState();
 
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true);
       await signout();
-      useOrganizationStore.getState().reset();
+      useOrgAndProjStore.getState().reset();
     } catch (error) {
       console.error('Error:', error);
     } finally {
       setIsSigningOut(false);
     }
-  };
-
-  const handleSignIn = () => {
-    router.push('/auth/signin');
   };
 
   return (

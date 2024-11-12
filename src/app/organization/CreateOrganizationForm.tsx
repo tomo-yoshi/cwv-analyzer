@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createOrganization } from './actions';
+import { useOrgAndProjStore } from '@/store/orgAndProjStore';
 
 interface Props {
   userId: string | undefined;
@@ -10,6 +11,7 @@ interface Props {
 export function CreateOrganizationForm({ userId }: Props) {
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { setSelectedOrganization, setSelectedProject } = useOrgAndProjStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,8 +19,13 @@ export function CreateOrganizationForm({ userId }: Props) {
     
     setIsLoading(true);
     try {
-      await createOrganization(name, userId);
-      setName('');
+      const result = await createOrganization(name, userId);
+      if (result.success && result.organization && result.project) {
+        // Set the newly created organization and project as selected
+        setSelectedOrganization(result.organization);
+        setSelectedProject(result.project);
+        setName('');
+      }
     } finally {
       setIsLoading(false);
     }

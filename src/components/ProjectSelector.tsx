@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { useOrganizationStore } from '@/store/organizationStore';
+import { useOrgAndProjStore } from '@/store/orgAndProjStore';
 
 interface Project {
   id: string;
@@ -13,12 +13,11 @@ interface Project {
 
 export function ProjectSelector() {
   const [projects, setProjects] = useState<Project[]>([]);
-  const { selectedOrganization, selectedProject, setSelectedProject } = useOrganizationStore();
+  const { selectedOrganization, selectedProject, setSelectedProject } = useOrgAndProjStore();
   const supabase = createClient();
 
   useEffect(() => {
     if (!selectedOrganization) {
-      setProjects([]);
       return;
     }
 
@@ -29,15 +28,21 @@ export function ProjectSelector() {
         .eq('organization_id', selectedOrganization.id);
 
       if (!error && data) {
-        setProjects(data.map(p => ({
+        const mappedProjects = data.map(p => ({
           ...p,
           organizationId: p.organization_id
-        })));
+        }));
+        setProjects(mappedProjects);
+        
+        // If no project is selected, select the first one
+        if (!selectedProject && mappedProjects.length > 0) {
+          setSelectedProject(mappedProjects[0]);
+        }
       }
     };
 
     fetchProjects();
-  }, [selectedOrganization]);
+  }, [selectedOrganization, selectedProject, setSelectedProject]);
 
   if (!selectedOrganization) {
     return null;
@@ -50,11 +55,13 @@ export function ProjectSelector() {
         value={selectedProject?.id || ''}
         onChange={(e) => {
           const project = projects.find(p => p.id === e.target.value);
-          setSelectedProject(project || null);
+          if (project) {
+            setSelectedProject(project);
+          }
         }}
         className="block w-48 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+        required
       >
-        <option value="">Select Project</option>
         {projects.map((project) => (
           <option key={project.id} value={project.id}>
             {project.name}

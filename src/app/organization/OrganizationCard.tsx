@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { deleteOrganization } from './actions';
-import { useOrganizationStore } from '@/store/organizationStore';
+import { useOrgAndProjStore } from '@/store/orgAndProjStore';
 
 interface OrganizationCardProps {
   organization: {
@@ -14,11 +14,17 @@ interface OrganizationCardProps {
 
 export function OrganizationCard({ organization, role }: OrganizationCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
-  const { selectedOrganization, setSelectedOrganization } = useOrganizationStore();
+  const { selectedOrganization, setSelectedOrganization } = useOrgAndProjStore();
   const canDelete = role === 'OWNER' || role === 'ADMIN';
   const isSelected = selectedOrganization?.id === organization.id;
 
   const handleDelete = async () => {
+    // Prevent deletion of the selected organization
+    if (isSelected) {
+      alert('Cannot delete the currently selected organization. Please select another organization first.');
+      return;
+    }
+
     if (!window.confirm('Are you sure you want to delete this organization? This action cannot be undone.')) {
       return;
     }
@@ -29,19 +35,12 @@ export function OrganizationCard({ organization, role }: OrganizationCardProps) 
       if (!result.success) {
         throw new Error('Failed to delete organization');
       }
-      if (isSelected) {
-        setSelectedOrganization(null);
-      }
     } catch (error) {
       console.error('Error:', error);
       alert('Failed to delete organization');
     } finally {
       setIsDeleting(false);
     }
-  };
-
-  const handleSelect = () => {
-    setSelectedOrganization(organization);
   };
 
   return (
@@ -52,17 +51,20 @@ export function OrganizationCard({ organization, role }: OrganizationCardProps) 
           <div className="text-sm text-gray-500">Role: {role}</div>
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={handleSelect}
-            className={`px-3 py-1 rounded-md text-sm font-medium
-              ${isSelected 
-                ? 'bg-blue-500 text-white' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-          >
-            {isSelected ? 'Selected' : 'Select'}
-          </button>
-          {canDelete && (
+          {!isSelected && (
+            <button
+              onClick={() => setSelectedOrganization(organization)}
+              className="px-3 py-1 rounded-md text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200"
+            >
+              Select
+            </button>
+          )}
+          {isSelected && (
+            <span className="px-3 py-1 rounded-md text-sm font-medium bg-blue-500 text-white">
+              Selected
+            </span>
+          )}
+          {canDelete && !isSelected && (
             <button
               onClick={handleDelete}
               disabled={isDeleting}
