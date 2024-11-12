@@ -431,14 +431,14 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
                     <>
                       {showTimestamp && <td className='border-r text-center'>{tbts1[index]?.timeStamp}</td>}
                       <td className={isDualMode ? 'border-r-2 text-center' : 'text-center'}>
-                        {Math.floor(tbts1[index]?.result.numericValue as number) || '-'}
+                        {Math.floor(tbts1[index]?.result.numericValue) || '-'}
                       </td>
                     </>
                   )}
                   {isDualMode && columnVisibility.url2 && (
                     <>
                       {showTimestamp && <td className='border-r text-center'>{tbts2[index]?.timeStamp}</td>}
-                      <td className='text-center'>{Math.floor(tbts2[index]?.result.numericValue as number) || '-'}</td>
+                      <td className='text-center'>{Math.floor(tbts2[index]?.result.numericValue) || '-'}</td>
                     </>
                   )}
                 </tr>

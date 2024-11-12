@@ -3,7 +3,7 @@ export interface TbtResult {
   displayValue?: `${number} ms`;
   id?: 'total-blocking-time';
   numericUnit?: 'millisecond';
-  numericValue?: number;
+  numericValue: number;
   score?: number;
   scoreDisplayMode?: 'numeric';
   title?: 'Total Blocking Time';

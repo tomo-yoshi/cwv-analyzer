@@ -198,7 +198,7 @@ export const TBTConfig = ({ heading }: TBTConfigProps) => {
                   <td className='text-center'>{item?.timeStamp}</td>
                 )}
                 <td className='text-center'>
-                  {Math.floor(item?.result.numericValue as number)}
+                  {Math.floor(item?.result.numericValue)}
                 </td>
               </tr>
             ))}
