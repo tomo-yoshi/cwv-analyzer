@@ -30,6 +30,7 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
   } = usePageSpeedStore();
   const { selectedProject } = useOrgAndProjStore();
 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [url1, setUrl1] = useState('');
   const [url2, setUrl2] = useState('');
   const [isDualMode, setIsDualMode] = useState(true);
@@ -101,6 +102,16 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
       setTimer(0);
     }
   };
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsLoggedIn(!!user);
+    };
+    
+    checkAuth();
+  }, []);
 
   useEffect(() => {
     if (!scan) return;
@@ -316,7 +327,8 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
         </div>
       </div>
 
-      <div className='mb-4 grid gap-4'>
+    <div className='mb-4 grid gap-4'>
+      {isLoggedIn && (
         <div className='flex gap-4'>
           {tbts1.length > 0 && (
             <Button
@@ -338,7 +350,8 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
             </Button>
           )}
         </div>
-      </div>
+      )}
+    </div>
 
       <div className='mb-4 flex items-center gap-4'>
         {/* <div className='flex items-center gap-2'>

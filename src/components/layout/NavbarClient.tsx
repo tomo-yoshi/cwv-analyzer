@@ -16,7 +16,7 @@ export function NavbarClient({ session }: NavbarClientProps) {
     <>
       <div className="flex items-center gap-4">
         <a href="/" className="text-xl font-bold text-primary-600">
-          CWV Analyzer
+          CWV Analyzer - β
         </a>
         {/* {session && <ProjectSelector />} */}
         {session && selectedOrganization && selectedProject && (
