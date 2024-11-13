@@ -1,13 +1,15 @@
 import { Metadata } from 'next';
 import * as React from 'react';
 import { Inter } from 'next/font/google';
+import { StoreInitializer } from '@/components/providers/StoreInitializer';
 
 import './globals.css';
 // !STARTERCONF This is for demo purposes, remove @/styles/colors.css import immediately
 import '@/styles/colors.css';
 
 import { siteConfig } from '@/constant/config';
-import Navbar from '@/components/layout/Navbar';
+import { Navbar } from '@/components/layout/Navbar';
+import { Sidebar } from '@/components/layout/Sidebar';
 import Footer from '@/components/layout/Footer';
 
 // !STARTERCONF Change these default meta
@@ -62,10 +64,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`flex flex-col min-h-screen ${inter.className}`}>
+        <StoreInitializer />
         <Navbar />
-        <main className="flex-1">
-          {children}
-        </main>
+        <div className="flex min-h-screen">
+          <Sidebar />
+          <main className="flex-1 ml-12 mt-16">
+            {children}
+          </main>
+        </div>
         <Footer />
       </body>
     </html>

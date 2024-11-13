@@ -1,0 +1,47 @@
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  directUrl         = env("DIRECT_URL")
+  schemas           = ["public", "auth"]
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
+}
+
+
+model User {
+  id              Int               @id @default(autoincrement())
+  email           String            @unique
+  firstName       String?           @map("first_name")
+  lastName        String?           @map("last_name")
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  organization    Organization?     @relation(fields: [organizationId], references: [id])
+  organizationId  Int?
+  role            UserRole          @default(USER)
+
+  @@schema("public")
+  @@map("users")
+}
+
+model Organization {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  users       User[]
+
+  @@schema("public")
+  @@map("organizations")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+
+  @@schema("public")
+}
+
