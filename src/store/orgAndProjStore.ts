@@ -1,3 +1,4 @@
+import { createClient } from '@/lib/supabase/client';
 import { create } from 'zustand';
 
 export interface Organization {
@@ -32,11 +33,38 @@ const getLocalStorageItem = (key: string) => {
 export const useOrgAndProjStore = create<OrgAndProjStore>((set) => ({
   selectedOrganization: null,
   selectedProject: null,
-  setSelectedOrganization: (org) => {
+  setSelectedOrganization: async (organization) => {
+    const supabase = createClient();
+    
+    // Fetch projects for the selected organization
+    const { data: projects } = await supabase
+      .from('projects')
+      .select('*')
+      // @ts-ignore
+      .eq('organization_id', organization.id)
+      .order('created_at', { ascending: false });
+
+    // Select the first project if available
+    const firstProject = projects?.[0];
+    
+    // Create the new project state
+    const newProject = firstProject ? {
+      id: firstProject.id,
+      name: firstProject.name,
+      // @ts-ignore
+      organizationId: organization.id
+    } : null;
+
+    // Save both to localStorage
     if (typeof window !== 'undefined') {
-      localStorage.setItem('selectedOrganization', JSON.stringify(org));
+      localStorage.setItem('selectedOrganization', JSON.stringify(organization));
+      localStorage.setItem('selectedProject', JSON.stringify(newProject));
     }
-    set({ selectedOrganization: org });
+    
+    set({
+      selectedOrganization: organization,
+      selectedProject: newProject
+    });
   },
   setSelectedProject: (project) => {
     if (typeof window !== 'undefined') {
