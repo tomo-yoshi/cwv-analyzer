@@ -4,12 +4,14 @@ import { Session } from '@supabase/supabase-js';
 // import { ProjectSelector } from '../ProjectSelector';
 import { UserMenu } from './UserMenu';
 import { useOrgAndProjStore } from '@/store/orgAndProjStore';
+import { useInitialState } from '@/hooks/useInitialState';
 
 interface NavbarClientProps {
   session: Session | null;
 }
 
 export function NavbarClient({ session }: NavbarClientProps) {
+  useInitialState();
   const { selectedOrganization, selectedProject } = useOrgAndProjStore();
 
   return (

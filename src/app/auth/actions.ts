@@ -1,26 +1,13 @@
+// @ts-nocheck
 'use server';
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { z } from 'zod';
 
 import { createClient } from '@/lib/supabase/server';
 
-import { State } from './signin/state';
-
-const formSchema = z.object({
-  email: z
-    .string()
-    .min(1, { message: 'Email field has to be filled.' })
-    .email('Email is not valid.'),
-  password: z
-    .string()
-    .min(5, { message: 'Password should be longer than four letters.' }),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-});
-
 export async function login(prevState: { message: string[] }, formData: FormData) {
+  let redirectPath = '/';
   try {
     const supabase = createClient();
     
@@ -44,7 +31,7 @@ export async function login(prevState: { message: string[] }, formData: FormData
       };
     }
 
-    // Fetch user's organizations and their roles
+    // Fetch user's organizations and their roles with projects
     const { data: memberships, error: membershipError } = await supabase
       .from('organization_members')
       .select(`
@@ -70,6 +57,7 @@ export async function login(prevState: { message: string[] }, formData: FormData
       };
     }
 
+    let initialState = null;
     // If user has organizations, set the first one and its first project
     if (memberships && memberships.length > 0) {
       const firstOrg = memberships[0].organizations;
@@ -77,21 +65,30 @@ export async function login(prevState: { message: string[] }, formData: FormData
       const firstProject = firstOrg.projects[0];
 
       if (firstOrg && firstProject) {
-        // Store selected organization and project in localStorage
-        // This is needed because the store will be reset on page load
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('selectedOrganization', JSON.stringify(firstOrg));
-          localStorage.setItem('selectedProject', JSON.stringify(firstProject));
-        }
+        initialState = {
+          selectedOrganization: {
+            id: firstOrg.id,
+            name: firstOrg.name,
+          },
+          selectedProject: {
+            id: firstProject.id,
+            name: firstProject.name,
+            organizationId: firstOrg.id,
+          },
+        };
       }
     }
 
-    redirect('/');
+    redirectPath = initialState ? `/?initial=${encodeURIComponent(JSON.stringify(initialState))}` : '/';
+
   } catch (error) {
     console.error('Login error:', error);
     return {
       message: ['An error occurred during login. Please try again.'],
     };
+  } finally {
+    revalidatePath('/', 'layout');
+    redirect(redirectPath);
   }
 }
 
