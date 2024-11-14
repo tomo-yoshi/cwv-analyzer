@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { HiHome, HiClock, HiCog } from 'react-icons/hi';
+import { HiHome, HiClock, HiCog, HiCollection } from 'react-icons/hi';
 import clsx from 'clsx';
 import { Session } from '@supabase/supabase-js';
 
@@ -23,6 +23,11 @@ export function SidebarClient({ initialSession }: SidebarClientProps) {
       name: 'TBT Analysis', 
       href: '/analysis/tbt', 
       icon: HiClock 
+    },
+    { 
+      name: 'Collect Data', 
+      href: '/analysis/collect-data', 
+      icon: HiCollection 
     },
     ...(initialSession ? [
       { 
