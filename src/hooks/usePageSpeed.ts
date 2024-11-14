@@ -33,8 +33,14 @@ export function usePageSpeedTest() {
     error: null,
   });
 
-  const runTests = async (url: string, numberOfRecords: number = 1) => {
+  const runTests = async (
+    url: string, 
+    numberOfRecords = 1,
+    onProgress?: (completedTests: number) => void,
+    signal?: AbortSignal
+  ) => {
     setResults(prev => ({ ...prev, isLoading: true, error: null }));
+    let completedTests = 0;
 
     try {
       const strategies = ['mobile', 'desktop'] as const;
@@ -47,6 +53,11 @@ export function usePageSpeedTest() {
         const strategyResults: PageSpeedResult[] = [];
 
         for (let i = 0; i < numberOfRecords; i++) {
+          // Check if cancelled
+          if (signal?.aborted) {
+            throw new Error('Test cancelled');
+          }
+
           const queryParams = new URLSearchParams({
             url: url,
             category: 'performance',
@@ -55,7 +66,8 @@ export function usePageSpeedTest() {
           });
 
           const response = await fetch(
-            `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?${queryParams}`
+            `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?${queryParams}`,
+            { signal }
           );
 
           if (!response.ok) {
@@ -63,20 +75,21 @@ export function usePageSpeedTest() {
           }
 
           const data = await response.json();
-
-          // Format the results
-          const metrics = Object.entries(data.lighthouseResult.audits).reduce((acc, [key, value]: [string, any]) => {
-            if (value.numericValue !== undefined) {
-              acc[key] = {
-                title: value.title,
-                description: value.description,
-                score: value.score,
-                numericValue: value.numericValue,
-                displayValue: value.displayValue,
-              };
-            }
-            return acc;
-          }, {} as { [key: string]: PageSpeedMetric });
+          
+          // Format the results and add to array
+          const metrics = Object.entries(data.lighthouseResult.audits)
+            .reduce((acc, [key, value]: [string, any]) => {
+              if (value.numericValue !== undefined) {
+                acc[key] = {
+                  title: value.title,
+                  description: value.description,
+                  score: value.score,
+                  numericValue: value.numericValue,
+                  displayValue: value.displayValue,
+                };
+              }
+              return acc;
+            }, {} as { [key: string]: PageSpeedMetric });
 
           const result: PageSpeedResult = {
             timestamp: data.analysisUTCTimestamp,
@@ -85,10 +98,14 @@ export function usePageSpeedTest() {
           };
 
           strategyResults.push(result);
+          
+          // Update progress
+          completedTests++;
+          onProgress?.(completedTests);
 
-          // Add delay between requests to avoid rate limiting
+          // Add delay between requests
           if (i < numberOfRecords - 1) {
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            await new Promise(resolve => setTimeout(resolve, 63000));
           }
         }
 
