@@ -53,10 +53,10 @@ export const TbtDistributionChart = ({
 
   return (
     <BarChart
-      width={600}
-      height={300}
+      width={720}
+      height={320}
       data={chartData}
-      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+      margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
     >
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis 
@@ -67,6 +67,7 @@ export const TbtDistributionChart = ({
       <YAxis 
         domain={[0, 25]} 
         tick={{ fontSize: 10 }}
+        width={30} 
       />
       <Legend 
         wrapperStyle={{ fontSize: '10px' }}
