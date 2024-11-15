@@ -4,6 +4,7 @@ import TbtDistributionPieCharts from '@/components/molecules/TbtDistributionPieC
 import TbtDistributionTable from '@/components/molecules/TbtDistributionTable';
 import TbtStatisticalComparison from '@/components/molecules/TbtStatisticalComparison';
 import type { TbtItem } from "@/types/pagespeed";
+// import { useTestData } from '@/hooks/useTestData';
 
 interface TbtAnalyticsProps {
   url1Data: TbtItem[];
@@ -21,6 +22,12 @@ const TbtAnalytics = ({
   const [showTable, setShowTable] = useState(false);
   const [showChart, setShowChart] = useState(false);
   const [showPieCharts, setShowPieCharts] = useState(false);
+
+  // const { loadTestData } = useTestData();
+  
+  // useEffect(() => {
+  //   loadTestData(30)
+  // }, [])
 
   return (
     <div className="h-full p-4 space-y-4">
@@ -66,7 +73,7 @@ const TbtAnalytics = ({
         <div className={`transition-all duration-200 ease-in-out ${
           showChart ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
         } overflow-hidden`}>
-          <div className="px-4">
+          <div className="px-4 overflow-x-scroll">
             <TbtDistributionChart
               url1Data={url1Data}
               url2Data={url2Data}
