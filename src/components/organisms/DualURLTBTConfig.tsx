@@ -163,15 +163,15 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
       }
     };
 
-    let getTbtInterval1: ReturnType<typeof setInterval> | null = null;
-    let getTbtInterval2: ReturnType<typeof setInterval> | null = null;
+    let getTbtInterval1: NodeJS.Timer | null = null;
+    let getTbtInterval2: NodeJS.Timer | null = null;
 
     if (url1 && tbts1.length < numOfRecords) {
       getTbt(url1, addTbt1);
       getTbtInterval1 = setInterval(() => {
         if (tbts1.length >= numOfRecords) {
           if (getTbtInterval1) {
-            window.clearInterval(getTbtInterval1);
+            clearInterval(getTbtInterval1);
           }
         } else {
           getTbt(url1, addTbt1);
@@ -184,7 +184,7 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
       getTbtInterval2 = setInterval(() => {
         if (tbts2.length >= numOfRecords) {
           if (getTbtInterval2) {
-            window.clearInterval(getTbtInterval2);
+            clearInterval(getTbtInterval2);
           }
         } else {
           getTbt(url2, addTbt2);
