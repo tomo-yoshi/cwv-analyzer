@@ -13,6 +13,10 @@ import PageSpeedMedian from '@/components/organisms/PageSpeedMedian';
 
 import { useOrgAndProjStore } from '@/store/orgAndProjStore';
 
+import { Search } from 'lucide-react';
+import Input from '@/components/atoms/inputs/Input';
+import Select from '@/components/atoms/selects/Select';
+
 
 const Split = dynamic(
   () => import('@geoffcox/react-splitter').then(mod => mod.Split),
@@ -76,6 +80,9 @@ export default function AnalyzeSingleDataPage() {
   const [analysisType, setAnalysisType] = useState<'mean' | 'median'>('mean');
   const [showAIAnalysis, setShowAIAnalysis] = useState(false);
   const [isPro, setIsPro] = useState(false);
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
+  const [urlFilter, setUrlFilter] = useState('');
+  const [creatorFilter, setCreatorFilter] = useState('');
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -155,6 +162,38 @@ export default function AnalyzeSingleDataPage() {
     setRecords(prev => prev.filter(record => record.id !== recordId));
   };
 
+  // Get unique creators from records
+  const uniqueCreators = Array.from(new Set(records.map(record => 
+    `${record.profiles.first_name || ''} ${record.profiles.last_name || ''}`.trim()
+  ))).filter(Boolean);
+
+  const creatorOptions = [
+    { value: '', label: 'All creators' },
+    ...uniqueCreators.map(creator => ({
+      value: creator,
+      label: creator
+    }))
+  ];
+
+  const sortOptions = [
+    { value: 'desc', label: 'Newest first' },
+    { value: 'asc', label: 'Oldest first' }
+  ];
+
+  // Filter and sort records
+  const filteredAndSortedRecords = records
+    .filter(record => {
+      const matchesUrl = record.url.toLowerCase().includes(urlFilter.toLowerCase());
+      const creatorName = `${record.profiles.first_name || ''} ${record.profiles.last_name || ''}`.trim();
+      const matchesCreator = !creatorFilter || creatorName === creatorFilter;
+      return matchesUrl && matchesCreator;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+    });
+
   if (!selectedProject) {
     return (
       <div className="p-8 text-center">
@@ -199,13 +238,44 @@ export default function AnalyzeSingleDataPage() {
       <Split initialPrimarySize="400px" minPrimarySize="300px" minSecondarySize="500px">
         <div className="h-full overflow-auto p-4 pl-8">
           <h2 className="text-xl font-semibold mb-4">PageSpeed Records ({records.length})</h2>
+
+          {/* Filters and Sort */}
+          <div className="space-y-4 mb-6">
+            <div className="flex items-center space-x-2">
+              <div className="flex-1">
+                <div className="relative">
+                  {/* <Search className="absolute right-2 top-[12px] h-4 w-4 text-gray-500" /> */}
+                  <Input
+                    placeholder="Filter by URL"
+                    value={urlFilter}
+                    onChange={(e) => setUrlFilter(e.target.value)}
+                    className="pl-8"
+                  />
+                </div>
+              </div>
+              <Select
+                label=""
+                value={sortOrder}
+                onChange={(value) => setSortOrder(value as 'desc' | 'asc')}
+                options={sortOptions}
+              />
+            </div>
+
+            <Select
+              label="Filter by creator"
+              value={creatorFilter}
+              onChange={setCreatorFilter}
+              options={creatorOptions}
+            />
+          </div>
+
           {loading ? (
             <p>Loading records...</p>
-          ) : records.length === 0 ? (
+          ) : filteredAndSortedRecords.length === 0 ? (
             <p>No records found</p>
           ) : (
             <div className="space-y-2">
-              {records.map(record => (
+              {filteredAndSortedRecords.map(record => (
                 <div
                   key={record.id}
                   className={`p-4 border rounded-lg cursor-pointer transition-colors ${
