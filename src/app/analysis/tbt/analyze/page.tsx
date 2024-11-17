@@ -25,6 +25,10 @@ interface TbtRecord {
   }>;
   strategy: 'mobile' | 'desktop';
   created_at: string;
+  profiles: {
+    first_name: string | null;
+    last_name: string | null;
+  };
 }
 
 export default function AnalyzePage() {
@@ -42,7 +46,13 @@ export default function AnalyzePage() {
 
       const { data, error } = await supabase
         .from('tbt_records')
-        .select('*')
+        .select(`
+          *,
+          profiles (
+            first_name,
+            last_name
+          )
+        `)
         .eq('project_id', selectedProject.id)
         .order('created_at', { ascending: false });
 
@@ -129,6 +139,9 @@ export default function AnalyzePage() {
                       </p>
                       <p className="text-sm text-gray-500">
                         Records: {record.records.length}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Created by: {record.profiles.first_name || ''} {record.profiles.last_name || ''}
                       </p>
                     </div>
                     <Button
