@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePageSpeedTest } from '@/hooks/usePageSpeed';
 import Button from '@/components/atoms/buttons/Button';
 import Input from '@/components/atoms/inputs/Input';
@@ -99,13 +99,23 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
 
   const totalTests = instance.numberOfRecords * 2; // mobile + desktop
   
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleRunTest = async () => {
     if (!instance.url) return;
     
     setProgress(0);
     setIsCancelled(false);
     setIsCompleted(false);
+    setElapsedTime(0);
     abortControllerRef.current = new AbortController();
+
+    // Start the timer
+    const startTime = Date.now();
+    timerRef.current = setInterval(() => {
+      setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
+    }, 1000);
 
     try {
       const results = await runTests(
@@ -126,6 +136,12 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
       if (!isCancelled) {
         console.error('Test failed:', error);
       }
+    } finally {
+      // Clear the timer
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     }
   };
 
@@ -133,7 +149,21 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
     setIsCancelled(true);
     abortControllerRef.current?.abort();
     setProgress(0);
+    // Clear the timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
   };
+
+  // Clean up timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
 
   const handleSaveRecord = async () => {
     if (!selectedProject) {
@@ -273,6 +303,8 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
                 />
               </div>
               <div className="text-sm text-gray-500 text-right">
+                {elapsedTime}s
+                {' • '}
                 {isCompleted ? 'Complete' : `${Math.round(progress)}% Complete`}
               </div>
             </div>
