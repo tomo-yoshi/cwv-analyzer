@@ -100,7 +100,7 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
   const totalTests = instance.numberOfRecords * 2; // mobile + desktop
   
   const [elapsedTime, setElapsedTime] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const handleRunTest = async () => {
     if (!instance.url) return;
