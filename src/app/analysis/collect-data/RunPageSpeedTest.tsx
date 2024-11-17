@@ -11,8 +11,8 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@radix-ui/react-collapsible";
-
-
+import { createClient } from '@/lib/supabase/client';
+import { useOrgAndProjStore } from '@/store/orgAndProjStore';
 
 interface TestInstance {
   id: string;
@@ -88,10 +88,13 @@ interface TestInstanceComponentProps {
 
 function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceComponentProps) {
   const { runTests, isLoading, error, mobileResults, desktopResults } = usePageSpeedTest();
+  const { selectedProject } = useOrgAndProjStore();
   const [isOpen, setIsOpen] = useState(false);
   const [progress, setProgress] = useState(0);
   const [isCancelled, setIsCancelled] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const totalTests = instance.numberOfRecords * 2; // mobile + desktop
@@ -132,6 +135,72 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
     setProgress(0);
   };
 
+  const handleSaveRecord = async () => {
+    if (!selectedProject) {
+      alert('Please select a project first');
+      return;
+    }
+
+    if (!instance.results) {
+      alert('No results to save');
+      return;
+    }
+
+    // Generate default display name
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: '2-digit', 
+      day: '2-digit' 
+    });
+    const formattedTime = now.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false 
+    });
+    
+    // Extract domain from URL
+    const domain = new URL(instance.url).hostname.replace('www.', '');
+    const defaultName = `${domain} - ${formattedDate} ${formattedTime}`;
+
+    // Prompt with pre-filled name
+    const displayName = window.prompt('Please enter a display name for these results:', defaultName);
+    if (!displayName) {
+      alert('Display name is required');
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      const supabase = createClient();
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('Please sign in to save records');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('pagespeed_records')
+        .insert({
+          display_name: displayName,
+          url: instance.url,
+          records: instance.results,
+          project_id: selectedProject.id,
+          profile_id: user.id
+        });
+
+      if (error) throw error;
+      setIsSaved(true);
+      alert('Records saved successfully!');
+    } catch (error) {
+      console.error('Error saving records:', error);
+      alert('Failed to save records');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="border rounded-lg p-4 space-y-4">
       <div className="flex justify-between items-start">
@@ -144,7 +213,7 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
                 value={instance.url}
                 onChange={(e) => onUpdate({ url: e.target.value })}
                 placeholder="https://example.com"
-                disabled={isLoading}
+                disabled={isLoading || isCompleted}
               />
             </div>
             <div className="w-32">
@@ -155,32 +224,38 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
                 max={10}
                 value={instance.numberOfRecords}
                 onChange={(e) => onUpdate({ numberOfRecords: Number(e.target.value) })}
-                disabled={isLoading}
+                disabled={isLoading || isCompleted}
               />
             </div>
           </div>
 
-                    <div className="flex gap-2">
+          <div className="flex gap-2">
             {isLoading ? (
-              <Button
-                onClick={handleStop}
-              >
+              <Button onClick={handleStop}>
                 <StopCircle className="w-4 h-4 mr-2" />
                 Stop
               </Button>
             ) : (
-              <Button
-                onClick={handleRunTest}
-                disabled={!instance.url || isCompleted}
-              >
-                <Play className="w-4 h-4 mr-2" />
-                {isCompleted ? 'Completed' : 'Run Test'}
-              </Button>
+              <>
+                <Button
+                  onClick={handleRunTest}
+                  disabled={!instance.url || isCompleted}
+                >
+                  <Play className="w-4 h-4 mr-2" />
+                  {isCompleted ? 'Completed' : 'Run Test'}
+                </Button>
+                {isCompleted && selectedProject?.id && (
+                  <Button
+                    onClick={handleSaveRecord}
+                    disabled={isSaving || isSaved}
+                    variant="outline"
+                  >
+                    {isSaving ? 'Saving...' : isSaved ? 'Saved' : 'Save Results'}
+                  </Button>
+                )}
+              </>
             )}
-            <Button
-              onClick={onRemove}
-              disabled={isLoading}
-            >
+            <Button onClick={onRemove} disabled={isLoading}>
               <Trash2 className="w-4 h-4" />
             </Button>
           </div>
