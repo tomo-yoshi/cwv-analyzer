@@ -100,7 +100,7 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
   const totalTests = instance.numberOfRecords * 2; // mobile + desktop
   
   const [elapsedTime, setElapsedTime] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerRef = useRef<number | null>(null);
 
   const handleRunTest = async () => {
     if (!instance.url) return;
@@ -113,7 +113,7 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
 
     // Start the timer
     const startTime = Date.now();
-    timerRef.current = setInterval(() => {
+    timerRef.current = window.setInterval(() => {
       setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
     }, 1000);
 
@@ -137,9 +137,8 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
         console.error('Test failed:', error);
       }
     } finally {
-      // Clear the timer
       if (timerRef.current) {
-        clearInterval(timerRef.current);
+        window.clearInterval(timerRef.current);
         timerRef.current = null;
       }
     }
