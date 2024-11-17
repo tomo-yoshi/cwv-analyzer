@@ -94,8 +94,6 @@ export default function AnalyzeSingleDataPage() {
         .eq('project_id', selectedProject.id)
         .order('created_at', { ascending: false });
 
-      console.log(data);
-
       if (error) {
         console.error('Error fetching records:', error);
       } else {
@@ -165,6 +163,7 @@ export default function AnalyzeSingleDataPage() {
           <PageSpeedAskAI
             data={recordData}
             onClose={() => setShowAIAnalysis(false)}
+            isPro={false}
           />
         )}
       </div>

@@ -2,8 +2,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useOrgAndProjStore, Organization, Project } from '@/store/orgAndProjStore';
+
 import { createClient } from '@/lib/supabase/client';
+
+import { Organization, Project,useOrgAndProjStore } from '@/store/orgAndProjStore';
 
 export function ProjectSelector() {
   const { 

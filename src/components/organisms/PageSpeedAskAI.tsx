@@ -1,8 +1,16 @@
 import { X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { createClient } from '@/lib/supabase/client';
 
 import Button from '@/components/atoms/buttons/Button';
+
+import { User } from '@supabase/supabase-js';
+
+// Add this type extension
+interface CustomUser extends User {
+  plan?: string;
+}
 
 interface PageSpeedAskAIProps {
   data: {
@@ -10,6 +18,7 @@ interface PageSpeedAskAIProps {
     desktop: any;
   };
   onClose: () => void;
+  isPro: boolean;
 }
 
 const AVAILABLE_METRICS = [
@@ -40,6 +49,7 @@ const AVAILABLE_METRICS = [
 ];
 
 export default function PageSpeedAskAI({ data, onClose }: PageSpeedAskAIProps) {
+  const [isPro, setIsPro] = useState(false);
   const [loading, setLoading] = useState(false);
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>([]);
@@ -77,6 +87,11 @@ export default function PageSpeedAskAI({ data, onClose }: PageSpeedAskAIProps) {
   };
 
 const askAI = async () => {
+  if (!isPro) {
+    alert('This feature is only available for Pro plan users. Please upgrade to use AI analysis.');
+    return;
+  }
+  
   if (selectedMetrics.length === 0) {
     alert('Please select at least one metric to analyze');
     return;
@@ -147,12 +162,34 @@ const askAI = async () => {
       const result = await response.json();
       setAnalysis(result.analysis);
     } catch (error) {
-    console.error('Error analyzing data:', error);
-    setAnalysis('Failed to analyze data. Please try again.');
-  } finally {
-    setLoading(false);
-  }
+      console.error('Error analyzing data:', error);
+      setAnalysis('Failed to analyze data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    const updateUserPlan = async() => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', user?.id);
+
+      console.log(data);
+
+      if(error) {
+        console.error('Error fetching user\'s plan:', error);
+      } else {
+        const plan = data[0]?.plan.toLowerCase();
+        setIsPro(plan === 'pro');
+      }
+    };
+     updateUserPlan();
+  }, []);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -168,78 +205,98 @@ const askAI = async () => {
           </Button>
         </div>
 
-        <div className="space-y-6">
-          <div className="space-y-3">
-            <h3 className="font-medium text-lg">Provided Data Summary</h3>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="space-y-4">
-                <div>
-                  <div className="font-medium">Record Counts:</div>
-                  <ul className="list-disc list-inside text-sm text-gray-600">
-                    <li>Mobile Records: {data.mobile.length}</li>
-                    <li>Desktop Records: {data.desktop.length}</li>
-                  </ul>
+        {!isPro ? (
+          <div className="flex flex-col items-center justify-center px-8 pb-8 text-center space-y-4">
+            <div className="text-xl font-semibold text-gray-900">Pro Plan Required</div>
+            <p className="text-gray-600 max-w-md">
+              AI Analysis is a premium feature available exclusively for Pro plan users. 
+              Upgrade your plan to access detailed AI-powered insights about your performance metrics.
+            </p>
+            <Button 
+              variant="primary"
+              className="bg-gray-900 text-white hover:bg-gray-800"
+              onClick={() => {
+                // Add your upgrade link here
+                window.location.href = '/pricing';
+              }}
+            >
+              Upgrade to Pro
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <h3 className="font-medium text-lg">Provided Data Summary</h3>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="space-y-4">
+                  <div>
+                    <div className="font-medium">Record Counts:</div>
+                    <ul className="list-disc list-inside text-sm text-gray-600">
+                      <li>Mobile Records: {data.mobile.length}</li>
+                      <li>Desktop Records: {data.desktop.length}</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="space-y-3">
-            <h3 className="font-medium text-lg">AI Analysis</h3>
-            <div className="bg-gray-50 p-4 rounded-lg min-h-[200px]">
-              {loading ? (
-                <div className="flex items-center justify-center h-32">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
-                </div>
-              ) : analysis ? (
-                <div className="prose prose-sm max-w-none bg-white p-6 rounded-lg shadow-sm">
-                  <ReactMarkdown>{analysis}</ReactMarkdown>
-                </div>
-              ) : (
-                <>
-                <div>
-                  <div className="font-medium mb-2">Select Metrics to Focus On:</div>
-                  <div className="flex flex-wrap gap-2">
-                    {AVAILABLE_METRICS.map(metric => (
-                      <Button
-                        key={metric.id}
-                        variant={selectedMetrics.includes(metric.id) ? 'primary' : 'outline'}
-                        onClick={() => toggleMetric(metric.id)}
-                        className="text-sm"
-                      >
-                        {metric.label}
-                      </Button>
-                    ))}
+            <div className="space-y-3">
+              <h3 className="font-medium text-lg">AI Analysis</h3>
+              <div className="bg-gray-50 p-4 rounded-lg min-h-[200px]">
+                {loading ? (
+                  <div className="flex items-center justify-center h-32">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
                   </div>
-                 <div className="text-sm text-gray-500 mt-2">
-                  {selectedMetrics.length === 0 
-                    ? 'Please select at least one metric to analyze' 
-                    : `Analysis will focus on ${selectedMetrics.length} selected metric${selectedMetrics.length === 1 ? '' : 's'}`
-                  }
-                </div>
-                </div>
-                  {!analysis && (
-                    <div className="flex flex-col items-center justify-center h-32 space-y-3">
-                      <p className="text-sm text-gray-600">
-                        {selectedMetrics.length === 0 
-                          ? 'Please select metrics above to analyze' 
-                          : 'Click the button below to generate an AI analysis of your selected metrics'
-                        }
-                      </p>
-                      <Button 
-                        onClick={askAI}
-                        disabled={selectedMetrics.length === 0}
-                        className={selectedMetrics.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
-                      >
-                        Generate Analysis
-                      </Button>
+                ) : analysis ? (
+                  <div className="prose prose-sm max-w-none bg-white p-6 rounded-lg shadow-sm">
+                    <ReactMarkdown>{analysis}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <>
+                  <div>
+                    <div className="font-medium mb-2">Select Metrics to Focus On:</div>
+                    <div className="flex flex-wrap gap-2">
+                      {AVAILABLE_METRICS.map(metric => (
+                        <Button
+                          key={metric.id}
+                          variant={selectedMetrics.includes(metric.id) ? 'primary' : 'outline'}
+                          onClick={() => toggleMetric(metric.id)}
+                          className="text-sm"
+                        >
+                          {metric.label}
+                        </Button>
+                      ))}
                     </div>
-                  )}
-                </>
-              )}
+                  <div className="text-sm text-gray-500 mt-2">
+                    {selectedMetrics.length === 0 
+                      ? 'Please select at least one metric to analyze' 
+                      : `Analysis will focus on ${selectedMetrics.length} selected metric${selectedMetrics.length === 1 ? '' : 's'}`
+                    }
+                  </div>
+                  </div>
+                    {!analysis && (
+                      <div className="flex flex-col items-center justify-center h-32 space-y-3">
+                        <p className="text-sm text-gray-600">
+                          {selectedMetrics.length === 0 
+                            ? 'Please select metrics above to analyze' 
+                            : 'Click the button below to generate an AI analysis of your selected metrics'
+                          }
+                        </p>
+                        <Button 
+                          onClick={askAI}
+                          disabled={selectedMetrics.length === 0}
+                          className={selectedMetrics.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                        >
+                          Generate Analysis
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

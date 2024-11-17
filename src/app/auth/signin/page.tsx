@@ -1,5 +1,7 @@
-import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+
+import { createClient } from '@/lib/supabase/server';
+
 import SignInForm from './SignInForm';
 
 export default async function SignInPage() {
