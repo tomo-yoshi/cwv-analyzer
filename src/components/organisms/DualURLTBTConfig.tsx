@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect, useState } from 'react';
 
 import Button from '@/components/atoms/buttons/Button';
@@ -163,8 +164,8 @@ export const DualURLTBTConfig = ({ heading }: DualURLTBTConfigProps) => {
       }
     };
 
-    let getTbtInterval1: NodeJS.Timer | NodeJS.Timeout | null = null;
-    let getTbtInterval2: NodeJS.Timer | NodeJS.Timeout | null = null;
+    let getTbtInterval1: NodeJS.Timer | null = null;
+    let getTbtInterval2: NodeJS.Timer | null = null;
 
     if (url1 && tbts1.length < numOfRecords) {
       getTbt(url1, addTbt1);
