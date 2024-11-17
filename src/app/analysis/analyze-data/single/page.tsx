@@ -13,6 +13,7 @@ import PageSpeedMedian from '@/components/organisms/PageSpeedMedian';
 
 import { useOrgAndProjStore } from '@/store/orgAndProjStore';
 
+
 const Split = dynamic(
   () => import('@geoffcox/react-splitter').then(mod => mod.Split),
   { ssr: false }
@@ -74,6 +75,7 @@ export default function AnalyzeSingleDataPage() {
   const [loading, setLoading] = useState(true);
   const [analysisType, setAnalysisType] = useState<'mean' | 'median'>('mean');
   const [showAIAnalysis, setShowAIAnalysis] = useState(false);
+  const [isPro, setIsPro] = useState(false);
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -104,6 +106,28 @@ export default function AnalyzeSingleDataPage() {
 
     fetchRecords();
   }, [selectedProject]);
+
+    useEffect(() => {
+    const updateUserPlan = async() => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', user?.id);
+
+      console.log(data);
+
+      if(error) {
+        console.error('Error fetching user\'s plan:', error);
+      } else {
+        const plan = data[0]?.plan.toLowerCase();
+        setIsPro(plan === 'pro');
+      }
+    };
+     updateUserPlan();
+  }, []);
 
   const handleRecordSelect = (recordId: string) => {
     setSelectedRecord(selectedRecord === recordId ? null : recordId);
@@ -163,7 +187,7 @@ export default function AnalyzeSingleDataPage() {
           <PageSpeedAskAI
             data={recordData}
             onClose={() => setShowAIAnalysis(false)}
-            isPro={false}
+            isPro={isPro}
           />
         )}
       </div>

@@ -1,16 +1,8 @@
 import { X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { createClient } from '@/lib/supabase/client';
 
 import Button from '@/components/atoms/buttons/Button';
-
-import { User } from '@supabase/supabase-js';
-
-// Add this type extension
-interface CustomUser extends User {
-  plan?: string;
-}
 
 interface PageSpeedAskAIProps {
   data: {
@@ -48,8 +40,7 @@ const AVAILABLE_METRICS = [
   },
 ];
 
-export default function PageSpeedAskAI({ data, onClose }: PageSpeedAskAIProps) {
-  const [isPro, setIsPro] = useState(false);
+export default function PageSpeedAskAI({ data, onClose, isPro }: PageSpeedAskAIProps) {
   const [loading, setLoading] = useState(false);
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>([]);
@@ -168,28 +159,6 @@ const askAI = async () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    const updateUserPlan = async() => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('plan')
-        .eq('id', user?.id);
-
-      console.log(data);
-
-      if(error) {
-        console.error('Error fetching user\'s plan:', error);
-      } else {
-        const plan = data[0]?.plan.toLowerCase();
-        setIsPro(plan === 'pro');
-      }
-    };
-     updateUserPlan();
-  }, []);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
