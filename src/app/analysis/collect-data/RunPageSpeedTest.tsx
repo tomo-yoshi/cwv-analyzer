@@ -97,7 +97,7 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
   const [isSaved, setIsSaved] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const totalTests = instance.numberOfRecords * 2; // mobile + desktop
+  const totalTests = instance.numberOfRecords * 2;
   
   const [elapsedTime, setElapsedTime] = useState(0);
   const timerRef = useRef<number | null>(null);
@@ -111,36 +111,43 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
     setElapsedTime(0);
     abortControllerRef.current = new AbortController();
 
-    // Start the timer
     const startTime = Date.now();
     timerRef.current = window.setInterval(() => {
       setElapsedTime(Math.floor((Date.now() - startTime) / 1000));
     }, 1000);
 
     try {
-      const results = await runTests(
+      const { results, cleanup } = await runTests(
         instance.url, 
         instance.numberOfRecords,
+        'both',
         (completedTests) => {
           setProgress((completedTests / totalTests) * 100);
+          // Check if all tests are complete
+          if (completedTests === totalTests) {
+            if (timerRef.current) {
+              window.clearInterval(timerRef.current);
+              timerRef.current = null;
+            }
+            setIsCompleted(true);
+            onUpdate({ results });
+            setIsOpen(true);
+            cleanup(); // Clean up intervals from usePageSpeed
+          }
         },
         abortControllerRef.current.signal
       );
       
-      if (!isCancelled) {
-        onUpdate({ results });
-        setIsOpen(true);
-        setIsCompleted(true);
-      }
     } catch (error) {
       if (!isCancelled) {
         console.error('Test failed:', error);
       }
-    } finally {
+      // Clear timer and reset state on error
       if (timerRef.current) {
         window.clearInterval(timerRef.current);
         timerRef.current = null;
       }
+      setIsCompleted(false);
     }
   };
 
@@ -148,15 +155,15 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
     setIsCancelled(true);
     abortControllerRef.current?.abort();
     setProgress(0);
-    // Clear the timer
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
+    setIsCompleted(false); // Reset completion state when stopped
   };
 
   // Clean up timer on unmount
-  useEffect(() => {
+  useEffect(() => {    
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
@@ -214,7 +221,10 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
         .insert({
           display_name: displayName,
           url: instance.url,
-          records: instance.results,
+          records: {
+            desktop: [...desktopResults],
+            mobile: [...mobileResults],
+          },
           project_id: selectedProject.id,
           profile_id: user.id
         });

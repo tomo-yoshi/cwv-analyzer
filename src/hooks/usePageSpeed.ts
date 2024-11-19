@@ -10,6 +10,8 @@ interface PageSpeedMetric {
   displayValue: string;
 }
 
+export type TestStrategy = 'mobile' | 'desktop' | 'both';
+
 interface PageSpeedResult {
   timestamp: string;
   metrics: {
@@ -99,49 +101,143 @@ export function usePageSpeedTest() {
   const runTests = async (
     url: string,
     numberOfRecords = 1,
+    strategy: TestStrategy = 'both',
     onProgress?: (completedTests: number) => void,
     signal?: AbortSignal
   ) => {
     setResults(prev => ({ ...prev, isLoading: true, error: null }));
     let mobileCompleted = 0;
     let desktopCompleted = 0;
-    const totalTests = numberOfRecords * 2; // Total for both mobile and desktop
 
     try {
-      const mobilePromise = runStrategy('mobile', url, numberOfRecords, 
-        (completed) => {
-          mobileCompleted = completed;
-          // Calculate total progress as a percentage of all tests
-          const totalCompleted = mobileCompleted + desktopCompleted;
-          onProgress?.(totalCompleted);
-        }, 
-        signal
-      );
+      let mobileInterval: NodeJS.Timer | null = null;
+      let desktopInterval: NodeJS.Timer | null = null;
+      let mobileResults: PageSpeedResult[] = [];
+      let desktopResults: PageSpeedResult[] = [];
+      let isTestComplete = false;
 
-      const desktopPromise = runStrategy('desktop', url, numberOfRecords,
-        (completed) => {
-          desktopCompleted = completed;
-          // Calculate total progress as a percentage of all tests
-          const totalCompleted = mobileCompleted + desktopCompleted;
-          onProgress?.(totalCompleted);
-        },
-        signal
-      );
-
-      const [mobileResults, desktopResults] = await Promise.all([mobilePromise, desktopPromise]);
-
-      const allResults = {
-        mobile: mobileResults,
-        desktop: desktopResults,
+      const checkCompletion = () => {
+        if (strategy === 'both') {
+          if (mobileCompleted >= numberOfRecords && desktopCompleted >= numberOfRecords && !isTestComplete) {
+            isTestComplete = true;
+            if (mobileInterval) clearInterval(mobileInterval);
+            if (desktopInterval) clearInterval(desktopInterval);
+            
+            setResults(prev => ({
+              ...prev,
+              mobile: mobileResults,
+              desktop: desktopResults,
+              isLoading: false,
+            }));
+            return true;
+          }
+        }
+        else if (strategy === 'mobile' && mobileCompleted >= numberOfRecords && !isTestComplete) {
+          isTestComplete = true;
+          if (mobileInterval) clearInterval(mobileInterval);
+          
+          setResults(prev => ({
+            ...prev,
+            mobile: mobileResults,
+            desktop: [],
+            isLoading: false,
+          }));
+          return true;
+        }
+        else if (strategy === 'desktop' && desktopCompleted >= numberOfRecords && !isTestComplete) {
+          isTestComplete = true;
+          if (desktopInterval) clearInterval(desktopInterval);
+          
+          setResults(prev => ({
+            ...prev,
+            mobile: [],
+            desktop: desktopResults,
+            isLoading: false,
+          }));
+          return true;
+        }
+        
+        return false;
       };
 
-      setResults(prev => ({
-        ...prev,
-        ...allResults,
-        isLoading: false,
-      }));
+      const runMobileTest = async () => {
+        if (mobileCompleted >= numberOfRecords) {
+          if (mobileInterval) clearInterval(mobileInterval);
+          checkCompletion();
+          return;
+        }
 
-      return allResults;
+        try {
+          const result = await runStrategy('mobile', url, 1, 
+            () => {
+              mobileCompleted++;
+              const totalCompleted = mobileCompleted + desktopCompleted;
+              onProgress?.(totalCompleted);
+              setResults(prev => ({
+                ...prev,
+                mobile: [...mobileResults],
+              }));
+              checkCompletion();
+            }, 
+            signal
+          );
+          mobileResults = [...mobileResults, ...result];
+        } catch (error) {
+          if (mobileInterval) clearInterval(mobileInterval);
+          throw error;
+        }
+      };
+
+      const runDesktopTest = async () => {
+        if (desktopCompleted >= numberOfRecords) {
+          if (desktopInterval) clearInterval(desktopInterval);
+          checkCompletion();
+          return;
+        }
+
+        try {
+          const result = await runStrategy('desktop', url, 1,
+            () => {
+              desktopCompleted++;
+              const totalCompleted = mobileCompleted + desktopCompleted;
+              onProgress?.(totalCompleted);
+              setResults(prev => ({
+                ...prev,
+                desktop: [...desktopResults],
+              }));
+              checkCompletion();
+            },
+            signal
+          );
+          desktopResults = [...desktopResults, ...result];
+        } catch (error) {
+          if (desktopInterval) clearInterval(desktopInterval);
+          throw error;
+        }
+      };
+
+      // Start initial tests
+      if (strategy === 'mobile' || strategy === 'both') {
+        await runMobileTest();
+        mobileInterval = setInterval(runMobileTest, 63000);
+      }
+
+      if (strategy === 'desktop' || strategy === 'both') {
+        await runDesktopTest();
+        desktopInterval = setInterval(runDesktopTest, 63000);
+      }
+
+      // Return results and cleanup function
+      return {
+        results: {
+          mobile: mobileResults,
+          desktop: desktopResults,
+        },
+        cleanup: () => {
+          if (mobileInterval) clearInterval(mobileInterval);
+          if (desktopInterval) clearInterval(desktopInterval);
+        }
+      };
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
