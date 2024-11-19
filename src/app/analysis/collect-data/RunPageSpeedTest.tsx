@@ -177,22 +177,30 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
   };
 
   const handleStop = () => {
-    setIsCancelled(true);
-    abortControllerRef.current?.abort();
-    setProgress(0);
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    setIsCompleted(false);
-    
-    // Reset results when stopped
-    onUpdate({ 
-      results: {
-        mobile: [],
-        desktop: []
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      "Are you sure you want to stop the test? The current results may be lost and you may need to start from the beginning."
+    );
+
+    if (confirmed) {
+      setIsCancelled(true);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
       }
-    });
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      setIsCompleted(false);
+      // Clear results when stopped
+      onUpdate({ 
+        results: {
+          mobile: [],
+          desktop: []
+        }
+      });
+    }
   };
 
   // Clean up timer on unmount
@@ -305,7 +313,7 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
             {isLoading ? (
               <Button onClick={handleStop}>
                 <StopCircle className="w-4 h-4 mr-2" />
-                Pause
+                Stop
               </Button>
             ) : (
               <>
