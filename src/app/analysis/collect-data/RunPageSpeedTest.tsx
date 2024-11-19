@@ -252,7 +252,7 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
                 value={instance.url}
                 onChange={(e) => onUpdate({ url: e.target.value })}
                 placeholder="https://example.com"
-                disabled={isLoading || isCompleted}
+                disabled={isLoading || isCompleted || isCancelled}
               />
             </div>
             <div className="w-32">
@@ -263,7 +263,7 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
                 max={10}
                 value={instance.numberOfRecords}
                 onChange={(e) => onUpdate({ numberOfRecords: Number(e.target.value) })}
-                disabled={isLoading || isCompleted}
+                disabled={isLoading || isCompleted || isCancelled}
               />
             </div>
           </div>
@@ -272,7 +272,7 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
             {isLoading ? (
               <Button onClick={handleStop}>
                 <StopCircle className="w-4 h-4 mr-2" />
-                Stop
+                Pause
               </Button>
             ) : (
               <>
@@ -281,7 +281,7 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
                   disabled={!instance.url || isCompleted}
                 >
                   <Play className="w-4 h-4 mr-2" />
-                  {isCompleted ? 'Completed' : 'Run Test'}
+                  {isCompleted ? 'Completed' : isCancelled ? 'Restart' : 'Run Test'}
                 </Button>
                 {isCompleted && selectedProject?.id && (
                   <Button
@@ -321,12 +321,12 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
         </div>
       </div>
 
-      {error && (
+      {/* {error && (
         <div className="text-red-500 text-sm">
           Error: {error}
         </div>
       )}
-
+ */}
       {instance.results && (
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <CollapsibleTrigger asChild>
