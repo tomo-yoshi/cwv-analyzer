@@ -301,7 +301,7 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
               <Input
                 type="number"
                 min={1}
-                max={10}
+                max={100}
                 value={instance.numberOfRecords}
                 onChange={(e) => onUpdate({ numberOfRecords: Number(e.target.value) })}
                 disabled={isLoading || isCompleted || isCancelled}
