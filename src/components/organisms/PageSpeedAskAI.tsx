@@ -1,14 +1,10 @@
 import { X } from 'lucide-react';
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-
 import Button from '@/components/atoms/buttons/Button';
 
 interface PageSpeedAskAIProps {
-  data: {
-    mobile: any;
-    desktop: any;
-  };
+  data: any[];
   onClose: () => void;
   isPro: boolean;
 }
@@ -53,75 +49,53 @@ export default function PageSpeedAskAI({ data, onClose, isPro }: PageSpeedAskAIP
     );
   };
 
-  const formatMetricsData = (deviceData: any[]) => {
+  const formatMetricsData = () => {
     const metrics = (selectedMetrics.length > 0 ? selectedMetrics : AVAILABLE_METRICS.map(m => m.id))
       .reduce((acc, key) => {
-        const values = deviceData
+        const values = data
           .map(item => item.metrics[key]?.numericValue)
           .filter(value => value !== undefined)
           .sort((a, b) => a - b);
 
         if (values.length === 0) return acc;
 
-        // @ts-ignore
         acc[key] = {
           worst: values[values.length - 1],
           best: values[0],
           median: values[Math.floor(values.length / 2)],
-          title: deviceData[0]?.metrics[key]?.title || key
+          title: data[0]?.metrics[key]?.title || key
         };
 
         return acc;
-      }, {});
+      }, {} as Record<string, any>);
 
     return metrics;
   };
 
-const askAI = async () => {
-  if (!isPro) {
-    alert('This feature is only available for Pro plan users. Please upgrade to use AI analysis.');
-    return;
-  }
-  
-  if (selectedMetrics.length === 0) {
-    alert('Please select at least one metric to analyze');
-    return;
-  }
-  setLoading(true);
-    try {
-      const mobileMetrics = formatMetricsData(data.mobile);
-      const desktopMetrics = formatMetricsData(data.desktop);
+  const askAI = async () => {
+    if (!isPro) {
+      alert('This feature is only available for Pro plan users. Please upgrade to use AI analysis.');
+      return;
+    }
+    
+    if (selectedMetrics.length === 0) {
+      alert('Please select at least one metric to analyze');
+      return;
+    }
 
-      const formattedData = {
-        recordCounts: {
-          mobile: data.mobile.length,
-          desktop: data.desktop.length
-        },
-        mobile: mobileMetrics,
-        desktop: desktopMetrics
-      };
+    setLoading(true);
+    try {
+      const metrics = formatMetricsData();
 
       const focusMessage = `Please focus your analysis particularly on these metrics: ${
         selectedMetrics.map(id => AVAILABLE_METRICS.find(m => m.id === id)?.label).join(', ')
       }.`;
 
       const prompt = `
-        Analyzing PageSpeed data with the following record counts:
-        - Mobile: ${formattedData.recordCounts.mobile} records
-        - Desktop: ${formattedData.recordCounts.desktop} records
+        Analyzing PageSpeed data with ${data.length} records.
 
-        Mobile Metrics (showing best/median/worst values):
-        ${Object.entries(formattedData.mobile)
-          .map(([key, value]: [string, any]) => 
-            `${value.title}:
-            - Best: ${value.best.toFixed(2)}
-            - Median: ${value.median.toFixed(2)}
-            - Worst: ${value.worst.toFixed(2)}`
-          )
-          .join('\n\n')}
-
-        Desktop Metrics (showing best/median/worst values):
-        ${Object.entries(formattedData.desktop)
+        Metrics (showing best/median/worst values):
+        ${Object.entries(metrics)
           .map(([key, value]: [string, any]) => 
             `${value.title}:
             - Best: ${value.best.toFixed(2)}
@@ -136,7 +110,6 @@ const askAI = async () => {
         1. A summary of the performance metrics
         2. Identify metrics that may indicate performance issues
         3. Suggest specific solutions for the identified problems
-        4. Compare mobile vs desktop performance
       `;
 
       const response = await fetch('/api/analyze', {
@@ -145,7 +118,7 @@ const askAI = async () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          data: formattedData,
+          data: { metrics },
           prompt
         }),
       });
@@ -165,11 +138,7 @@ const askAI = async () => {
       <div className="bg-white rounded-lg p-6 max-w-3xl w-full max-h-[80vh] overflow-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold">AI Analysis</h2>
-          <Button 
-            variant="ghost" 
-            onClick={onClose}
-            className="hover:bg-gray-100 p-2"
-          >
+          <Button variant="ghost" onClick={onClose} className="hover:bg-gray-100 p-2">
             <X className="h-5 w-5" />
           </Button>
         </div>
@@ -185,7 +154,6 @@ const askAI = async () => {
               variant="primary"
               className="bg-gray-900 text-white hover:bg-gray-800"
               onClick={() => {
-                // Add your upgrade link here
                 window.location.href = '/pricing';
               }}
             >
@@ -195,17 +163,24 @@ const askAI = async () => {
         ) : (
           <div className="space-y-6">
             <div className="space-y-3">
-              <h3 className="font-medium text-lg">Provided Data Summary</h3>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <div className="space-y-4">
-                  <div>
-                    <div className="font-medium">Record Counts:</div>
-                    <ul className="list-disc list-inside text-sm text-gray-600">
-                      <li>Mobile Records: {data.mobile.length}</li>
-                      <li>Desktop Records: {data.desktop.length}</li>
-                    </ul>
-                  </div>
-                </div>
+              <h3 className="font-medium text-lg">Select Metrics to Focus On:</h3>
+              <div className="flex flex-wrap gap-2">
+                {AVAILABLE_METRICS.map(metric => (
+                  <Button
+                    key={metric.id}
+                    variant={selectedMetrics.includes(metric.id) ? 'primary' : 'outline'}
+                    onClick={() => toggleMetric(metric.id)}
+                    className="text-sm"
+                  >
+                    {metric.label}
+                  </Button>
+                ))}
+              </div>
+              <div className="text-sm text-gray-500">
+                {selectedMetrics.length === 0 
+                  ? 'Please select at least one metric to analyze' 
+                  : `Analysis will focus on ${selectedMetrics.length} selected metric${selectedMetrics.length === 1 ? '' : 's'}`
+                }
               </div>
             </div>
 
@@ -221,46 +196,21 @@ const askAI = async () => {
                     <ReactMarkdown>{analysis}</ReactMarkdown>
                   </div>
                 ) : (
-                  <>
-                  <div>
-                    <div className="font-medium mb-2">Select Metrics to Focus On:</div>
-                    <div className="flex flex-wrap gap-2">
-                      {AVAILABLE_METRICS.map(metric => (
-                        <Button
-                          key={metric.id}
-                          variant={selectedMetrics.includes(metric.id) ? 'primary' : 'outline'}
-                          onClick={() => toggleMetric(metric.id)}
-                          className="text-sm"
-                        >
-                          {metric.label}
-                        </Button>
-                      ))}
-                    </div>
-                  <div className="text-sm text-gray-500 mt-2">
-                    {selectedMetrics.length === 0 
-                      ? 'Please select at least one metric to analyze' 
-                      : `Analysis will focus on ${selectedMetrics.length} selected metric${selectedMetrics.length === 1 ? '' : 's'}`
-                    }
+                  <div className="flex flex-col items-center justify-center h-32 space-y-3">
+                    <p className="text-sm text-gray-600">
+                      {selectedMetrics.length === 0 
+                        ? 'Please select metrics above to analyze' 
+                        : 'Click the button below to generate an AI analysis of your selected metrics'
+                      }
+                    </p>
+                    <Button 
+                      onClick={askAI}
+                      disabled={selectedMetrics.length === 0}
+                      className={selectedMetrics.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
+                    >
+                      Generate Analysis
+                    </Button>
                   </div>
-                  </div>
-                    {!analysis && (
-                      <div className="flex flex-col items-center justify-center h-32 space-y-3">
-                        <p className="text-sm text-gray-600">
-                          {selectedMetrics.length === 0 
-                            ? 'Please select metrics above to analyze' 
-                            : 'Click the button below to generate an AI analysis of your selected metrics'
-                          }
-                        </p>
-                        <Button 
-                          onClick={askAI}
-                          disabled={selectedMetrics.length === 0}
-                          className={selectedMetrics.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}
-                        >
-                          Generate Analysis
-                        </Button>
-                      </div>
-                    )}
-                  </>
                 )}
               </div>
             </div>

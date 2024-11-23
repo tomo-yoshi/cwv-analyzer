@@ -27,15 +27,13 @@ interface PageSpeedRecord {
   id: string;
   display_name: string;
   url: string;
-  records: {
-    mobile: any[];
-    desktop: any[];
-  };
+  records: any[];
   created_at: string;
   profiles: {
     first_name: string | null;
     last_name: string | null;
   };
+  strategy: 'mobile' | 'desktop';
 }
 
 const AnalysisTypeToggle = ({ 
@@ -203,12 +201,12 @@ export default function AnalyzeSingleDataPage() {
   }
 
   const renderAnalysis = () => {
-    if (!selectedRecord) {
-      return <p>Please select a record to analyze</p>;
-    }
+  if (!selectedRecord) {
+    return <p>Please select a record to analyze</p>;
+  }
 
-    const recordData = records.find(r => r.id === selectedRecord)?.records || { mobile: [], desktop: [] };
-    const displayName = records.find(r => r.id === selectedRecord)?.display_name || '';
+  const record = records.find(r => r.id === selectedRecord);
+    if (!record) return null;
 
     return (
       <div>
@@ -218,13 +216,19 @@ export default function AnalyzeSingleDataPage() {
           onAskAI={() => setShowAIAnalysis(true)}
         />
         {analysisType === 'mean' ? (
-          <PageSpeedMean data={recordData} displayName={displayName} />
+          <PageSpeedMean 
+            data={record.records} 
+            displayName={`${record.display_name} (${record.strategy})`} 
+          />
         ) : (
-          <PageSpeedMedian data={recordData} displayName={displayName} />
+          <PageSpeedMedian 
+            data={record.records} 
+            displayName={`${record.display_name} (${record.strategy})`} 
+          />
         )}
         {showAIAnalysis && (
           <PageSpeedAskAI
-            data={recordData}
+            data={record.records}
             onClose={() => setShowAIAnalysis(false)}
             isPro={isPro}
           />
@@ -292,7 +296,10 @@ export default function AnalyzeSingleDataPage() {
                       </p>
                       <p className="text-sm text-gray-600">{record.url}</p>
                       <p className="text-sm text-gray-500">
-                        Mobile/Desktop Records: {record.records.mobile?.length || 0}
+                        Strategy: {record.strategy}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Records: {record.records.length}
                       </p>
                       <p className="text-sm text-gray-500">
                         Created by: {record.profiles.first_name || ''} {record.profiles.last_name || ''}

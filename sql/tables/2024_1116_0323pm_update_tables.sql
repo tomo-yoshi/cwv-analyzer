@@ -61,6 +61,7 @@ create table if not exists public.pagespeed_records (
   display_name text not null,
   url text not null,
   records jsonb not null,
+  strategy strategy_type not null,
   project_id uuid not null references public.projects on delete cascade,
   profile_id uuid not null references public.profiles on delete cascade,
   created_at timestamp with time zone not null default now(),

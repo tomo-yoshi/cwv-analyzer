@@ -15,10 +15,13 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import { useOrgAndProjStore } from '@/store/orgAndProjStore';
 
+type Strategy = 'mobile' | 'desktop';
+
 interface TestInstance {
   id: string;
   url: string;
   numberOfRecords: number;
+  strategy: Strategy;  // Add this field
   results: {
     mobile: any[];
     desktop: any[];
@@ -27,18 +30,25 @@ interface TestInstance {
 
 export default function RunPageSpeedTest() {
   const [testInstances, setTestInstances] = useState<TestInstance[]>([
-    { id: '1', url: '', numberOfRecords: 1, results: null }
+    { 
+      id: '1', 
+      url: '', 
+      numberOfRecords: 1, 
+      strategy: 'mobile',
+      results: null 
+    }
   ]);
   
   const addTestInstance = () => {
     setTestInstances(prev => [
       ...prev,
       { 
-        id: String(Date.now()),
-        url: '',
-        numberOfRecords: 1,
-        results: null
-      }
+      id: String(Date.now()),
+      url: '',
+      numberOfRecords: 1,
+      strategy: 'mobile',
+      results: null
+    }
     ]);
   };
 
@@ -106,7 +116,7 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
   const handleRunTest = async () => {
     if (!instance.url) return;
     
-    // Initialize empty results array at the start
+    // Initialize empty results
     onUpdate({ 
       results: {
         mobile: [],
@@ -126,34 +136,26 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
     }, 1000);
 
     try {
-      await runTests(
+      const { results } = await runTests(
         instance.url, 
         instance.numberOfRecords,
-        'both',
+        instance.strategy,
         (completedTests, currentResults) => {
-          setProgress((completedTests / totalTests) * 100);
-          
-          // Make sure currentResults exists before updating
-          if (currentResults) {
-            onUpdate({ 
-              results: {
-                mobile: currentResults.mobile || [],
-                desktop: currentResults.desktop || []
-              }
-            });
-          }
-
-          if (completedTests === totalTests) {
-            if (timerRef.current) {
-              window.clearInterval(timerRef.current);
-              timerRef.current = null;
-            }
-            setIsCompleted(true);
-            setIsOpen(true);
-          }
+          setProgress((completedTests / instance.numberOfRecords) * 100);
+          onUpdate({ results: currentResults });
         },
         abortControllerRef.current.signal
       );
+
+      // Update final results
+      onUpdate({ results });
+
+      if (timerRef.current) {
+        window.clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      setIsCompleted(true);
+      setIsOpen(true);
       
     } catch (error) {
       if (!isCancelled) {
@@ -262,12 +264,10 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
       .insert({
         display_name: displayName,
         url: instance.url,
-        records: {
-          desktop: instance.results.desktop,
-          mobile: instance.results.mobile,
-        },
+        records: instance.strategy === 'mobile' ? instance.results.mobile : instance.results.desktop,
         project_id: selectedProject.id,
-        profile_id: user.id
+        profile_id: user.id,
+        strategy: instance.strategy
       });
 
     if (error) throw error;
@@ -306,6 +306,30 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
                 onChange={(e) => onUpdate({ numberOfRecords: Number(e.target.value) })}
                 disabled={isLoading || isCompleted || isCancelled}
               />
+            </div>
+          </div>
+
+          <div className="flex gap-4">
+            <div className="flex items-center gap-4">
+              <label className="text-sm font-medium">Strategy:</label>
+              <div className="flex gap-2">
+                <Button
+                  variant={instance.strategy === 'mobile' ? 'primary' : 'outline'}
+                  onClick={() => onUpdate({ strategy: 'mobile' })}
+                  disabled={isLoading || isCompleted || isCancelled}
+                  className="px-4"
+                >
+                  Mobile
+                </Button>
+                <Button
+                  variant={instance.strategy === 'desktop' ? 'primary' : 'outline'}
+                  onClick={() => onUpdate({ strategy: 'desktop' })}
+                  disabled={isLoading || isCompleted || isCancelled}
+                  className="px-4"
+                >
+                  Desktop
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -380,11 +404,13 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="transition-all">
-            <div className="mt-4 grid grid-cols-2 gap-4">
+            <div className="mt-4">
               <div>
-                <h3 className="font-medium mb-2">Mobile Results</h3>
+                <h3 className="font-medium mb-2">
+                  {instance.strategy === 'mobile' ? 'Mobile' : 'Desktop'} Results
+                </h3>
                 <div className="space-y-2">
-                  {instance.results.mobile.map((result, index) => (
+                  {instance.results[instance.strategy].map((result, index) => (
                     <Collapsible key={index}>
                       <CollapsibleTrigger asChild>
                         <Button
@@ -395,43 +421,107 @@ function TestInstanceComponent({ instance, onRemove, onUpdate }: TestInstanceCom
                           <ChevronDown className="w-4 h-4 transition-transform duration-200" />
                         </Button>
                       </CollapsibleTrigger>
-                      <CollapsibleContent className="border rounded p-2 mt-1">
-                        <div className="space-y-1">
-                          {Object.entries(result.metrics).map(([key, metric]) => (
-                            <div key={key} className="text-sm">
-                              <span className="font-medium">{metric.title}:</span>{' '}
-                              {metric.displayValue}
-                            </div>
-                          ))}
+                      <CollapsibleContent className="border rounded p-4 mt-1 space-y-4">
+                        {/* Core Web Vitals Section */}
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Core Web Vitals</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {Object.entries(result.metrics)
+                              .filter(([key]) => ['first-contentful-paint', 'largest-contentful-paint', 'cumulative-layout-shift', 'total-blocking-time'].includes(key))
+                              .map(([key, metric]) => (
+                                <div key={key} className="text-sm p-2 bg-gray-50 rounded">
+                                  <div className="font-medium">{metric.title}</div>
+                                  <div className="flex justify-between items-center">
+                                    <span>{metric.displayValue}</span>
+                                    <span className={`px-2 py-1 rounded text-xs ${
+                                      metric.score >= 0.9 ? 'bg-green-100 text-green-800' :
+                                      metric.score >= 0.5 ? 'bg-yellow-100 text-yellow-800' :
+                                      'bg-red-100 text-red-800'
+                                    }`}>
+                                      {Math.round(metric.score * 100)}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
                         </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  ))}
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="font-medium mb-2">Desktop Results</h3>
-                <div className="space-y-2">
-                  {instance.results.desktop.map((result, index) => (
-                    <Collapsible key={index}>
-                      <CollapsibleTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          className="w-full flex justify-between items-center text-sm text-gray-500 h-auto py-2"
-                        >
-                          Test {index + 1} - {new Date(result.timestamp).toLocaleString()}
-                          <ChevronDown className="w-4 h-4 transition-transform duration-200" />
-                        </Button>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="border rounded p-2 mt-1">
-                        <div className="space-y-1">
-                          {Object.entries(result.metrics).map(([key, metric]) => (
-                            <div key={key} className="text-sm">
-                              <span className="font-medium">{metric.title}:</span>{' '}
-                              {metric.displayValue}
-                            </div>
-                          ))}
+
+                        {/* Performance Metrics Section */}
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Performance Metrics</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {Object.entries(result.metrics)
+                              .filter(([key]) => ['speed-index', 'interactive', 'max-potential-fid', 'bootup-time'].includes(key))
+                              .map(([key, metric]) => (
+                                <div key={key} className="text-sm p-2 bg-gray-50 rounded">
+                                  <div className="font-medium">{metric.title}</div>
+                                  <div className="flex justify-between items-center">
+                                    <span>{metric.displayValue}</span>
+                                    <span className={`px-2 py-1 rounded text-xs ${
+                                      metric.score >= 0.9 ? 'bg-green-100 text-green-800' :
+                                      metric.score >= 0.5 ? 'bg-yellow-100 text-yellow-800' :
+                                      'bg-red-100 text-red-800'
+                                    }`}>
+                                      {Math.round(metric.score * 100)}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+
+                        {/* Resource Optimization Section */}
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Resource Optimization</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {Object.entries(result.metrics)
+                              .filter(([key]) => [
+                                'total-byte-weight', 'unused-css-rules', 'unused-javascript',
+                                'dom-size', 'unminified-css', 'unminified-javascript'
+                              ].includes(key))
+                              .map(([key, metric]) => (
+                                <div key={key} className="text-sm p-2 bg-gray-50 rounded">
+                                  <div className="font-medium">{metric.title}</div>
+                                  <div className="flex justify-between items-center">
+                                    <span>{metric.displayValue}</span>
+                                    <span className={`px-2 py-1 rounded text-xs ${
+                                      metric.score >= 0.9 ? 'bg-green-100 text-green-800' :
+                                      metric.score >= 0.5 ? 'bg-yellow-100 text-yellow-800' :
+                                      'bg-red-100 text-red-800'
+                                    }`}>
+                                      {Math.round(metric.score * 100)}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+
+                        {/* Network Performance Section */}
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Network Performance</h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {Object.entries(result.metrics)
+                              .filter(([key]) => [
+                                'server-response-time', 'network-rtt', 'network-server-latency',
+                                'uses-long-cache-ttl', 'uses-text-compression'
+                              ].includes(key))
+                              .map(([key, metric]) => (
+                                <div key={key} className="text-sm p-2 bg-gray-50 rounded">
+                                  <div className="font-medium">{metric.title}</div>
+                                  <div className="flex justify-between items-center">
+                                    <span>{metric.displayValue}</span>
+                                    <span className={`px-2 py-1 rounded text-xs ${
+                                      metric.score >= 0.9 ? 'bg-green-100 text-green-800' :
+                                      metric.score >= 0.5 ? 'bg-yellow-100 text-yellow-800' :
+                                      'bg-red-100 text-red-800'
+                                    }`}>
+                                      {Math.round(metric.score * 100)}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
                         </div>
                       </CollapsibleContent>
                     </Collapsible>

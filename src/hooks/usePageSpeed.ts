@@ -11,14 +11,14 @@ interface PageSpeedMetric {
   displayValue: string;
 }
 
-export type TestStrategy = 'mobile' | 'desktop' | 'both';
+export type Strategy = 'mobile' | 'desktop';
 
 interface PageSpeedResult {
   timestamp: string;
   metrics: {
     [key: string]: PageSpeedMetric;
   };
-  strategy: 'mobile' | 'desktop';
+  strategy: Strategy;
 }
 
 interface TestResults {
@@ -37,13 +37,13 @@ export function usePageSpeedTest() {
   });
 
   const runStrategy = async (
-    strategy: 'mobile' | 'desktop',
+    strategy: Strategy,
     url: string,
     numberOfTests: number,
-    onProgress: (completed: number) => void,
+    onProgress: (completed: number, currentResults: PageSpeedResult[]) => void,
     signal?: AbortSignal
   ) => {
-    const results = [];
+    const results: PageSpeedResult[] = [];
     
     for (let i = 0; i < numberOfTests; i++) {
       if (signal?.aborted) {
@@ -89,7 +89,7 @@ export function usePageSpeedTest() {
       };
 
       results.push(result);
-      onProgress(i + 1);
+      onProgress(i + 1, results); // Pass current results array
 
       if (i < numberOfTests - 1) {
         await new Promise(resolve => setTimeout(resolve, 63000));
@@ -100,116 +100,53 @@ export function usePageSpeedTest() {
   };
 
   const runTests = async (
-  url: string,
-  numberOfRecords = 1,
-  strategy: TestStrategy = 'both',
-  onProgress?: (completedTests: number, currentResults: { mobile: PageSpeedResult[], desktop: PageSpeedResult[] }) => void,
-  signal?: AbortSignal
-) => {
-  setResults(prev => ({ ...prev, isLoading: true, error: null }));
-  let mobileCompleted = 0;
-  let desktopCompleted = 0;
+    url: string,
+    numberOfRecords = 1,
+    strategy: Strategy,
+    onProgress?: (completedTests: number, currentResults: { mobile: PageSpeedResult[], desktop: PageSpeedResult[] }) => void,
+    signal?: AbortSignal
+  ) => {
+    setResults(prev => ({ ...prev, isLoading: true, error: null }));
 
-  try {
-    let mobileInterval: NodeJS.Timer | null = null;
-    let desktopInterval: NodeJS.Timer | null = null;
-    let mobileResults: PageSpeedResult[] = [];
-    let desktopResults: PageSpeedResult[] = [];
+    try {
+      const finalResults = await runStrategy(
+        strategy,
+        url,
+        numberOfRecords,
+        (completed, currentResults) => {
+          // Update progress with current results
+          onProgress?.(
+            completed,
+            {
+              mobile: strategy === 'mobile' ? currentResults : [],
+              desktop: strategy === 'desktop' ? currentResults : []
+            }
+          );
+        },
+        signal
+      );
 
-    const updateProgress = () => {
-      const totalCompleted = mobileCompleted + desktopCompleted;
-      const totalExpected = (strategy === 'both' ? 2 : 1) * numberOfRecords;
-      onProgress?.(totalCompleted, {
-        mobile: mobileResults,
-        desktop: desktopResults
-      });
+      setResults(prev => ({ ...prev, isLoading: false }));
 
-      if (totalCompleted === totalExpected) {
-        setResults(prev => ({ ...prev, isLoading: false }));
-      }
-    };
+      return {
+        results: {
+          mobile: strategy === 'mobile' ? finalResults : [],
+          desktop: strategy === 'desktop' ? finalResults : []
+        },
+        cleanup: () => {
+          setResults(prev => ({ ...prev, isLoading: false }));
+        }
+      };
 
-    const runMobileTest = async () => {
-      if (mobileCompleted >= numberOfRecords) {
-        if (mobileInterval) clearInterval(mobileInterval);
-        return;
-      }
-
-      try {
-        const result = await runStrategy('mobile', url, 1, 
-          (completed) => {
-            mobileCompleted++;
-            updateProgress();
-          }, 
-          signal
-        );
-        // Add results after we have them
-        mobileResults = [...mobileResults, ...result];
-        updateProgress();
-      } catch (error) {
-        if (mobileInterval) clearInterval(mobileInterval);
-        throw error;
-      }
-    };
-
-    const runDesktopTest = async () => {
-      if (desktopCompleted >= numberOfRecords) {
-        if (desktopInterval) clearInterval(desktopInterval);
-        return;
-      }
-
-      try {
-        const result = await runStrategy('desktop', url, 1,
-          (completed) => {
-            desktopCompleted++;
-            updateProgress();
-          },
-          signal
-        );
-        // Add results after we have them
-        desktopResults = [...desktopResults, ...result];
-        updateProgress();
-      } catch (error) {
-        if (desktopInterval) clearInterval(desktopInterval);
-        throw error;
-      }
-    };
-
-
-    // Start initial tests
-    if (strategy === 'mobile' || strategy === 'both') {
-      await runMobileTest();
-      mobileInterval = setInterval(runMobileTest, 63000);
+    } catch (error) {
+      setResults(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'An unknown error occurred'
+      }));
+      throw error;
     }
-
-    if (strategy === 'desktop' || strategy === 'both') {
-      await runDesktopTest();
-      desktopInterval = setInterval(runDesktopTest, 63000);
-    }
-
-    // Return results and cleanup function
-    return {
-      results: {
-        mobile: mobileResults,
-        desktop: desktopResults,
-      },
-      cleanup: () => {
-        if (mobileInterval) clearInterval(mobileInterval);
-        if (desktopInterval) clearInterval(desktopInterval);
-        setResults(prev => ({ ...prev, isLoading: false }));
-      }
-    };
-
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-    setResults(prev => ({
-      ...prev,
-      isLoading: false,
-      error: errorMessage,
-    }));
-    throw error;
-  }
-};
+  };
 
   return {
     runTests,
