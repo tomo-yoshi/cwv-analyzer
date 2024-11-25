@@ -117,7 +117,8 @@ export default function CompareTwoDataPage() {
       .map(([key, value]: [string, any]) => ({
         value: key,
         label: value.title || key
-      }));
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   };
 
   const prepareComparisonData = () => {
@@ -306,13 +307,13 @@ export default function CompareTwoDataPage() {
                     <BarChart3 className="h-4 w-4 mr-2" />
                     Bar
                   </Button>
-                  <Button
+                  {/* <Button
                     variant={viewType === 'table' ? 'primary' : 'outline'}
                     onClick={() => setViewType('table')}
                   >
                     <TableIcon className="h-4 w-4 mr-2" />
                     Table
-                  </Button>
+                  </Button> */}
                 </div>
               </div>
 

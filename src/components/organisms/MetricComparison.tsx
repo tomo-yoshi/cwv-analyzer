@@ -33,7 +33,6 @@ export function MetricComparison({
   viewType 
 }: MetricComparisonProps) {
   if (viewType === 'bar') {
-    // Use ranges based on selected metric
     const ranges = metricRanges[selectedMetric]?.ranges || [];
 
     const barData = ranges.map(range => ({
@@ -51,18 +50,35 @@ export function MetricComparison({
     const maxValue = Math.max(
       ...barData.map(d => Math.max(Number(d[record1Name]), Number(d[record2Name])))
     );
-    console.log(data)
     
     return (
-      <ResponsiveContainer width="100%" height={400}>
-        <BarChart data={barData}>
+      <ResponsiveContainer width="100%" height={600}>
+        <BarChart 
+          data={barData}
+          margin={{
+            top: 20,
+            right: 30,
+            left: 20,
+            bottom: 120
+          }}
+        >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
+          <XAxis 
+            dataKey="name" 
+            interval={0}
+            angle={-45}
+            textAnchor="end" 
+            height={100}
+            tick={{
+              fontSize: 12,
+              dy: 25
+            }}
+          />
           <YAxis domain={[0, maxValue]} />
           <Tooltip />
           <Legend />
-          <Bar dataKey={record1Name} fill="#8884d8" />
-          <Bar dataKey={record2Name} fill="#82ca9d" />
+          <Bar dataKey={record1Name} fill="#74c0fc" />
+          <Bar dataKey={record2Name} fill="#ff8787" />
         </BarChart>
       </ResponsiveContainer>
     );
