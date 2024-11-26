@@ -9,6 +9,7 @@ import Button from '@/components/atoms/buttons/Button';
 import Input from '@/components/atoms/inputs/Input';
 import Select from '@/components/atoms/selects/Select';
 import { DistributionData, MetricComparison } from '@/components/organisms/MetricComparison';
+import { metricsConfig } from '@/config/metrics';
 
 const Split = dynamic(
   () => import('@geoffcox/react-splitter').then(mod => mod.Split),
@@ -113,12 +114,24 @@ export default function CompareTwoDataPage() {
     if (!firstTest || !firstTest.metrics) return [];
 
     return Object.entries(firstTest.metrics)
-      .filter(([_, value]: [string, any]) => value.numericValue !== undefined)
+      .filter(([key, value]: [string, any]) => {
+        // Check if metric is enabled in config and has numeric value
+        const isEnabled = metricsConfig[key]?.enabled ?? false;
+        return isEnabled && value.numericValue !== undefined;
+      })
       .map(([key, value]: [string, any]) => ({
         value: key,
-        label: value.title || key
+        label: metricsConfig[key]?.title || value.title || key,
+        category: metricsConfig[key]?.category || 'Other'
       }))
-      .sort((a, b) => a.label.localeCompare(b.label));
+      .sort((a, b) => {
+        // First sort by category
+        if (a.category !== b.category) {
+          return a.category.localeCompare(b.category);
+        }
+        // Then by label
+        return a.label.localeCompare(b.label);
+      });
   };
 
   const prepareComparisonData = () => {

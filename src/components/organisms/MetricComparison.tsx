@@ -1,4 +1,4 @@
-import { metricRanges } from '@/constants/metricRanges';
+import { metricsConfig } from '@/config/metrics';
 import {
   BarChart,
   Bar,
@@ -43,7 +43,7 @@ export function MetricComparison({
   viewType 
 }: MetricComparisonProps) {
   if (viewType === 'bar') {
-    const ranges = metricRanges[selectedMetric]?.ranges || [];
+    const ranges = metricsConfig[selectedMetric]?.ranges || [];
 
     const barData = ranges.map(range => ({
       name: range,
