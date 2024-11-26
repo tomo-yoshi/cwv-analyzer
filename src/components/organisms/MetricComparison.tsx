@@ -17,8 +17,17 @@ function isInRange(value: number, range: string): boolean {
   return value > start && value <= end;
 }
 
+export interface DistributionData {
+  range: string;
+  record1Count: number;
+  record2Count: number;
+  record1Percentage: number;
+  record2Percentage: number;
+}
+
 interface MetricComparisonProps {
   data: any[];
+  distributionData: DistributionData[];
   record1Name: string;
   record2Name: string;
   selectedMetric: string;
@@ -26,7 +35,8 @@ interface MetricComparisonProps {
 }
 
 export function MetricComparison({ 
-  data, 
+  data,
+  distributionData,
   record1Name, 
   record2Name, 
   selectedMetric,
@@ -81,6 +91,39 @@ export function MetricComparison({
           <Bar dataKey={record2Name} fill="#ff8787" />
         </BarChart>
       </ResponsiveContainer>
+    );
+  };
+  if (viewType === 'table') {
+    return (
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-50">
+              <th className="p-2 text-left border">Range</th>
+              <th className="p-2 text-left border" colSpan={2}>{record1Name}</th>
+              <th className="p-2 text-left border" colSpan={2}>{record2Name}</th>
+            </tr>
+            <tr className="bg-gray-50">
+              <th className="p-2 text-left border"></th>
+              <th className="p-2 text-left border">Count</th>
+              <th className="p-2 text-left border">Percentage</th>
+              <th className="p-2 text-left border">Count</th>
+              <th className="p-2 text-left border">Percentage</th>
+            </tr>
+          </thead>
+          <tbody>
+            {distributionData.map((row, index) => (
+              <tr key={index} className="hover:bg-gray-50">
+                <td className="p-2 border">{row.range}</td>
+                <td className="p-2 border">{row.record1Count}</td>
+                <td className="p-2 border">{row.record1Percentage.toFixed(2)}%</td>
+                <td className="p-2 border">{row.record2Count}</td>
+                <td className="p-2 border">{row.record2Percentage.toFixed(2)}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     );
   }
 }

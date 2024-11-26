@@ -8,7 +8,7 @@ import { BarChart3, Search, TableIcon, Trash2 } from 'lucide-react';
 import Button from '@/components/atoms/buttons/Button';
 import Input from '@/components/atoms/inputs/Input';
 import Select from '@/components/atoms/selects/Select';
-import { MetricComparison } from '@/components/organisms/MetricComparison';
+import { DistributionData, MetricComparison } from '@/components/organisms/MetricComparison';
 
 const Split = dynamic(
   () => import('@geoffcox/react-splitter').then(mod => mod.Split),
@@ -192,6 +192,48 @@ export default function CompareTwoDataPage() {
       return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
     });
 
+  const calculateDistribution = () => {
+    if (selectedRecords.length !== 2 || !selectedMetric) return [];
+
+    const record1 = records.find(r => r.id === selectedRecords[0]);
+    const record2 = records.find(r => r.id === selectedRecords[1]);
+
+    if (!record1 || !record2) return [];
+
+    // Get all values for both records
+    const values1 = record1.records.map(r => r.metrics[selectedMetric]?.numericValue).filter(Boolean);
+    const values2 = record2.records.map(r => r.metrics[selectedMetric]?.numericValue).filter(Boolean);
+
+    // Calculate ranges
+    const allValues = [...values1, ...values2];
+    // const min = Math.min(...allValues);
+    const min = 0;
+    const max = Math.max(...allValues);
+    const range = max - min;
+    const bucketSize = range / 10; // Create 10 buckets
+
+    const distribution: DistributionData[] = [];
+
+    for (let i = 0; i < 10; i++) {
+      const rangeStart = min + (bucketSize * i);
+      const rangeEnd = rangeStart + bucketSize;
+      const rangeLabel = `${rangeStart.toFixed(2)} - ${rangeEnd.toFixed(2)}`;
+
+      const record1Count = values1.filter(v => v >= rangeStart && v < rangeEnd).length;
+      const record2Count = values2.filter(v => v >= rangeStart && v < rangeEnd).length;
+
+      distribution.push({
+        range: rangeLabel,
+        record1Count,
+        record2Count,
+        record1Percentage: (record1Count / values1.length) * 100,
+        record2Percentage: (record2Count / values2.length) * 100
+      });
+    }
+
+    return distribution;
+  };
+
   return (
     <div className="h-[calc(100vh-4rem)]">
       <Split initialPrimarySize="400px" minPrimarySize="300px" minSecondarySize="500px">
@@ -307,19 +349,20 @@ export default function CompareTwoDataPage() {
                     <BarChart3 className="h-4 w-4 mr-2" />
                     Bar
                   </Button>
-                  {/* <Button
+                  <Button
                     variant={viewType === 'table' ? 'primary' : 'outline'}
                     onClick={() => setViewType('table')}
                   >
                     <TableIcon className="h-4 w-4 mr-2" />
                     Table
-                  </Button> */}
+                  </Button>
                 </div>
               </div>
 
               {selectedMetric && (
                 <MetricComparison
                   data={prepareComparisonData()}
+                  distributionData={calculateDistribution()}
                   record1Name={records.find(r => r.id === selectedRecords[0])?.display_name || ''}
                   record2Name={records.find(r => r.id === selectedRecords[1])?.display_name || ''}
                   selectedMetric={selectedMetric}
