@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import { Activity, ArrowRight, BarChart2, LineChart, Search } from 'lucide-react';
-import { AnalyzeRecordsCard } from '@/app/analysis/tbt/page';
+import { Activity, ArrowRight, LineChart, Search } from 'lucide-react';
+import { AnalyzeRecordsCard } from '@/components/AnalyzeRecordsCard';
 
 export const metadata = {
   title: 'Core Web Vitals Analyzer',
