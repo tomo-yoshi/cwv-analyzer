@@ -133,34 +133,54 @@ export function MetricComparison({
   };
   if (viewType === 'table') {
     return (
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-50">
-              <th className="p-2 text-left border">Range</th>
-              <th className="p-2 text-left border" colSpan={2}>{record1Name}</th>
-              <th className="p-2 text-left border" colSpan={2}>{record2Name}</th>
-            </tr>
-            <tr className="bg-gray-50">
-              <th className="p-2 text-left border"></th>
-              <th className="p-2 text-left border">Count</th>
-              <th className="p-2 text-left border">Percentage</th>
-              <th className="p-2 text-left border">Count</th>
-              <th className="p-2 text-left border">Percentage</th>
-            </tr>
-          </thead>
-          <tbody>
-            {distributionData.map((row, index) => (
-              <tr key={index} className="hover:bg-gray-50">
-                <td className="p-2 border">{row.range}</td>
-                <td className="p-2 border">{row.record1Count}</td>
-                <td className="p-2 border">{row.record1Percentage.toFixed(2)}%</td>
-                <td className="p-2 border">{row.record2Count}</td>
-                <td className="p-2 border">{row.record2Percentage.toFixed(2)}%</td>
+      <div>
+        <div className="p-4 border rounded-lg mb-4">
+          <h3 className="text-sm font-medium mb-2">Customize Range</h3>
+          <RangeSelector
+            key={selectedMetric}
+            metricKey={selectedMetric}
+            defaultMin={metric.defaultRange.min}
+            defaultMax={metric.defaultRange.max}
+            unit={metric.unit}
+            onRangeChange={handleRangeChange}
+          />
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="p-2 text-left border">Range</th>
+                <th className="p-2 text-left border" colSpan={2}>{record1Name}</th>
+                <th className="p-2 text-left border" colSpan={2}>{record2Name}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+              <tr className="bg-gray-50">
+                <th className="p-2 text-left border"></th>
+                <th className="p-2 text-left border">Count</th>
+                <th className="p-2 text-left border">Percentage</th>
+                <th className="p-2 text-left border">Count</th>
+                <th className="p-2 text-left border">Percentage</th>
+              </tr>
+            </thead>
+            <tbody>
+              {calculateRanges().map((range, index) => {
+                const record1Count = data.filter(d => isInRange(d.record1Value, range)).length;
+                const record2Count = data.filter(d => isInRange(d.record2Value, range)).length;
+                const record1Percentage = (record1Count / data.length) * 100;
+                const record2Percentage = (record2Count / data.length) * 100;
+                
+                return (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="p-2 border">{range}</td>
+                    <td className="p-2 border">{record1Count}</td>
+                    <td className="p-2 border">{record1Percentage.toFixed(2)}%</td>
+                    <td className="p-2 border">{record2Count}</td>
+                    <td className="p-2 border">{record2Percentage.toFixed(2)}%</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
     );
   }
