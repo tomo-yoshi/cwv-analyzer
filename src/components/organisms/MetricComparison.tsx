@@ -1,6 +1,6 @@
 import { RangeSelector } from '@/components/molecules/RangeSelector';
 import { metricsConfig } from '@/config/metrics';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   BarChart,
   Bar,
@@ -47,21 +47,29 @@ export function MetricComparison({
   const [customRange, setCustomRange] = useState<{min: number; max: number} | null>(null);
   
   const metric = metricsConfig[selectedMetric];
-  const { min, max } = customRange || metric.defaultRange;
+  const [min, setMin] = useState(metric.defaultRange.min);
+  const [max, setMax] = useState(metric.defaultRange.max);
 
-  // Calculate ranges based on min/max
-  const calculateRanges = () => {
+  useEffect(() => {
+    setCustomRange(null);
+    setMin(metric.defaultRange.min);
+    setMax(metric.defaultRange.max);
+  }, [selectedMetric]);
+
+   const calculateRanges = () => {
     const step = (max - min) / 10;
     return Array.from({ length: 11 }, (_, i) => {
-      if (i === 10) return `${max + 1}~`;
-      const rangeStart = min + (step * i);
-      const rangeEnd = min + (step * (i + 1));
+      if (i === 10) return `${(max + 0.001).toFixed(3)}~`;
+      const rangeStart = Number((min + (step * i)).toFixed(3));
+      const rangeEnd = Number((min + (step * (i + 1))).toFixed(3));
       return `${rangeStart}~${rangeEnd}`;
     });
   };
 
   const handleRangeChange = (newMin: number, newMax: number) => {
     setCustomRange({ min: newMin, max: newMax });
+    setMin(newMin);
+    setMax(newMax);
   };
   
   if (viewType === 'bar') {
@@ -82,6 +90,7 @@ export function MetricComparison({
         <div className="p-4 border rounded-lg">
           <h3 className="text-sm font-medium mb-2">Customize Range</h3>
           <RangeSelector
+            key={selectedMetric}
             metricKey={selectedMetric}
             defaultMin={metric.defaultRange.min}
             defaultMax={metric.defaultRange.max}
