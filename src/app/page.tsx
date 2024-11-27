@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { Activity, ArrowRight, BarChart2, LineChart, Search } from 'lucide-react';
+import { AnalyzeRecordsCard } from '@/app/analysis/tbt/page';
 
 export const metadata = {
   title: 'Core Web Vitals Analyzer',
@@ -35,7 +36,7 @@ export default async function HomePage() {
                 <div className="p-3 rounded-lg bg-primary-50 text-primary-500">
                   <Search className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-semibold">TBT Test</h3>
+                <h3 className="text-xl font-semibold">Run Tests</h3>
                 <ArrowRight className="w-5 h-5 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
               <p className="text-gray-600">
@@ -48,38 +49,10 @@ export default async function HomePage() {
               </ul>
             </Link>
 
-            <div className={isLoggedIn ? 
-              "group border rounded-lg p-6 hover:border-primary-500 transition-colors" : 
-              "border rounded-lg p-6 bg-gray-50"
-            }>
-              <div className="flex items-center gap-4 mb-4">
-                <div className={`p-3 rounded-lg ${
-                  isLoggedIn ? 'bg-primary-50 text-primary-500' : 'bg-gray-100 text-gray-400'
-                }`}>
-                  <BarChart2 className="w-6 h-6" />
-                </div>
-                <h3 className={`text-xl font-semibold ${isLoggedIn ? '' : 'text-gray-400'}`}>
-                  TBT Analytics
-                </h3>
-                {isLoggedIn && (
-                  <ArrowRight className="w-5 h-5 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-                )}
-              </div>
-              <p className={isLoggedIn ? 'text-gray-600' : 'text-gray-500'}>
-                Compare and analyze TBT records with interactive charts and detailed metrics.
-              </p>
-              <ul className={`mt-4 text-sm ${isLoggedIn ? 'text-gray-500' : 'text-gray-400'} space-y-2`}>
-                <li>• Interactive visualizations</li>
-                <li>• Historical data analysis</li>
-                <li>• Performance trending</li>
-                <li>• Detailed metric insights</li>
-              </ul>
-              {!isLoggedIn && (
-                <p className="text-sm text-red-500 mt-4">
-                  Please log in to access this feature
-                </p>
-              )}
-            </div>
+            <AnalyzeRecordsCard 
+              isLoggedIn={isLoggedIn}
+              href="/analysis/tbt/analyze"
+            />
           </div>
         </div>
 
@@ -115,38 +88,52 @@ export default async function HomePage() {
         <div className="mb-12">
           <h2 className="text-2xl font-semibold text-gray-900 mb-6 px-2">Analyze Saved Data</h2>
           <div className="grid gap-8">
-            <div className={isLoggedIn ? 
-              "group border rounded-lg p-6 hover:border-primary-500 transition-colors" : 
-              "border rounded-lg p-6 bg-gray-50"
-            }>
-              <div className="flex items-center gap-4 mb-4">
-                <div className={`p-3 rounded-lg ${
-                  isLoggedIn ? 'bg-primary-50 text-primary-500' : 'bg-gray-100 text-gray-400'
-                }`}>
-                  <LineChart className="w-6 h-6" />
-                </div>
-                <h3 className={`text-xl font-semibold ${isLoggedIn ? '' : 'text-gray-400'}`}>
-                  PageSpeed Analytics
-                </h3>
-                {isLoggedIn && (
+            {isLoggedIn ? (
+              <Link 
+                href="/analysis/analyze-data"
+                className="group border rounded-lg p-6 hover:border-primary-500 transition-colors"
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 rounded-lg bg-primary-50 text-primary-500">
+                    <LineChart className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-semibold">PageSpeed Analytics</h3>
                   <ArrowRight className="w-5 h-5 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-                )}
-              </div>
-              <p className={isLoggedIn ? 'text-gray-600' : 'text-gray-500'}>
-                Analyze saved PageSpeed test results with AI-powered insights and detailed metrics comparison.
-              </p>
-              <ul className={`mt-4 text-sm ${isLoggedIn ? 'text-gray-500' : 'text-gray-400'} space-y-2`}>
-                <li>• AI-powered analysis</li>
-                <li>• Performance comparison</li>
-                <li>• Historical trends</li>
-                <li>• Detailed metric breakdowns</li>
-              </ul>
-              {!isLoggedIn && (
+                </div>
+                <p className="text-gray-600">
+                  Analyze saved PageSpeed test results with AI-powered insights and detailed metrics comparison.
+                </p>
+                <ul className="mt-4 text-sm text-gray-500 space-y-2">
+                  <li>• AI-powered analysis</li>
+                  <li>• Performance comparison</li>
+                  <li>• Historical trends</li>
+                  <li>• Detailed metric breakdowns</li>
+                </ul>
+              </Link>
+            ) : (
+              <div className="border rounded-lg p-6 bg-gray-50">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 rounded-lg bg-gray-100 text-gray-400">
+                    <LineChart className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-400">
+                    PageSpeed Analytics
+                  </h3>
+                </div>
+                <p className="text-gray-500">
+                  Analyze saved PageSpeed test results with AI-powered insights and detailed metrics comparison.
+                </p>
+                <ul className="mt-4 text-sm text-gray-400 space-y-2">
+                  <li>• AI-powered analysis</li>
+                  <li>• Performance comparison</li>
+                  <li>• Historical trends</li>
+                  <li>• Detailed metric breakdowns</li>
+                </ul>
                 <p className="text-sm text-red-500 mt-4">
                   Please log in to access this feature
                 </p>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </main>

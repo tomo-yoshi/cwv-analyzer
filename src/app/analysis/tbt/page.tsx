@@ -7,7 +7,7 @@ interface AnalyzeRecordsCardProps {
   href: string;
 }
 
-function AnalyzeRecordsCard({ isLoggedIn, href }: AnalyzeRecordsCardProps) {
+export function AnalyzeRecordsCard({ isLoggedIn, href }: AnalyzeRecordsCardProps) {
   const content = {
     title: 'Analyze Records',
     description: 'Compare and analyze TBT records with interactive charts and detailed metrics. Gain insights into your page\'s performance over time.',

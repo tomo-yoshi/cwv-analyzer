@@ -29,12 +29,12 @@ export function SidebarClient({ initialSession }: SidebarClientProps) {
       href: '/analysis/collect-data', 
       icon: HiCollection 
     },
-    { 
-      name: 'Analyze Saved Data', 
-      href: '/analysis/analyze-data', 
-      icon: HiChartBar
-    },
     ...(initialSession ? [
+      { 
+        name: 'Analyze Saved Data', 
+        href: '/analysis/analyze-data', 
+        icon: HiChartBar
+      },
       { 
         name: 'Settings', 
         href: '/settings',
