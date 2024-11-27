@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
+import { ArrowRight, Search } from 'lucide-react';
+import { AnalyzeRecordsCard } from '@/components/AnalyzeRecordsCard';
 
 export default async function TbtPage() {
   const { data: session } = await createClient().auth.getSession();
@@ -7,40 +9,38 @@ export default async function TbtPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">Total Blocking Time Analysis</h1>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold">Total Blocking Time Analysis</h1>
+        <p className="text-gray-600 mt-2">Analyze and track Total Blocking Time metrics for your pages</p>
+      </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-6">
         <Link 
           href="/analysis/tbt/inspect"
-          className="block p-6 bg-white rounded-lg border border-gray-200 hover:border-primary-500 transition-colors"
+          className="group border rounded-lg p-6 hover:border-primary-500 transition-colors"
         >
-          <h2 className="text-xl font-semibold mb-2">Inspect Page</h2>
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 rounded-lg bg-primary-50 text-primary-500">
+              <Search className="w-6 h-6" />
+            </div>
+            <h2 className="text-xl font-semibold">Inspect Page</h2>
+            <ArrowRight className="w-5 h-5 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+          </div>
           <p className="text-gray-600">
-            Run TBT analysis on specific URLs and save the results
+            Run TBT analysis on specific URLs and save the results for future reference.
+            Track how your pages perform in terms of blocking time.
           </p>
+          <ul className="mt-4 text-sm text-gray-500 space-y-2">
+            <li>• Real-time TBT analysis</li>
+            <li>• Multiple URL testing</li>
+            <li>• Save and track results</li>
+          </ul>
         </Link>
 
-        {isLoggedIn ? (
-          <Link 
-            href="/analysis/tbt/analyze"
-            className="block p-6 bg-white rounded-lg border border-gray-200 hover:border-primary-500 transition-colors"
-          >
-            <h2 className="text-xl font-semibold mb-2">Analyze Records</h2>
-            <p className="text-gray-600">
-              Compare and analyze TBT records with interactive charts
-            </p>
-          </Link>
-        ) : (
-          <div className="block p-6 bg-gray-50 rounded-lg border border-gray-200">
-            <h2 className="text-xl font-semibold mb-2 text-gray-400">Analyze Records</h2>
-            <p className="text-gray-500">
-              Compare and analyze TBT records with interactive charts
-            </p>
-            <p className="text-sm text-red-500 mt-2">
-              Please log in to access this feature
-            </p>
-          </div>
-        )}
+        <AnalyzeRecordsCard 
+          isLoggedIn={isLoggedIn}
+          href="/analysis/tbt/analyze"
+        />
       </div>
     </div>
   );

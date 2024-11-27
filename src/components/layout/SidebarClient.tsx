@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { HiHome, HiClock, HiCog } from 'react-icons/hi';
+import { HiHome, HiClock, HiCog, HiCollection, HiChartBar } from 'react-icons/hi';
 import clsx from 'clsx';
 import { Session } from '@supabase/supabase-js';
 
@@ -24,7 +24,17 @@ export function SidebarClient({ initialSession }: SidebarClientProps) {
       href: '/analysis/tbt', 
       icon: HiClock 
     },
+    { 
+      name: 'Collect Data', 
+      href: '/analysis/collect-data', 
+      icon: HiCollection 
+    },
     ...(initialSession ? [
+      { 
+        name: 'Analyze Saved Data', 
+        href: '/analysis/analyze-data', 
+        icon: HiChartBar
+      },
       { 
         name: 'Settings', 
         href: '/settings',
@@ -43,7 +53,7 @@ export function SidebarClient({ initialSession }: SidebarClientProps) {
       <div
         className={clsx(
           'h-full bg-white border-r shadow-lg transition-all duration-300 overflow-hidden',
-          isHovered ? 'w-56' : 'w-16'
+          isHovered ? 'w-60' : 'w-16'
         )}
       >
         <nav className="py-6 px-5 grid items-start">
