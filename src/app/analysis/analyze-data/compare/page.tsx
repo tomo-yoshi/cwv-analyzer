@@ -113,25 +113,25 @@ export default function CompareTwoDataPage() {
     const firstTest = record.records[0];
     if (!firstTest || !firstTest.metrics) return [];
 
-    return Object.entries(firstTest.metrics)
-      .filter(([key, value]: [string, any]) => {
-        // Check if metric is enabled in config and has numeric value
-        const isEnabled = metricsConfig[key]?.enabled ?? false;
-        return isEnabled && value.numericValue !== undefined;
-      })
-      .map(([key, value]: [string, any]) => ({
-        value: key,
-        label: metricsConfig[key]?.title || value.title || key,
-        category: metricsConfig[key]?.category || 'Other'
-      }))
-      .sort((a, b) => {
-        // First sort by category
-        if (a.category !== b.category) {
-          return a.category.localeCompare(b.category);
-        }
-        // Then by label
-        return a.label.localeCompare(b.label);
-      });
+    return [
+      { value: '', label: 'Select Metric', category: '' }, // Add this line
+      ...Object.entries(firstTest.metrics)
+        .filter(([key, value]: [string, any]) => {
+          const isEnabled = metricsConfig[key]?.enabled ?? false;
+          return isEnabled && value.numericValue !== undefined;
+        })
+        .map(([key, value]: [string, any]) => ({
+          value: key,
+          label: metricsConfig[key]?.title || value.title || key,
+          category: metricsConfig[key]?.category || 'Other'
+        }))
+        .sort((a, b) => {
+          if (a.category !== b.category) {
+            return a.category.localeCompare(b.category);
+          }
+          return a.label.localeCompare(b.label);
+        })
+    ];
   };
 
   const prepareComparisonData = () => {
