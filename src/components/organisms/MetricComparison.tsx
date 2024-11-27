@@ -1,4 +1,6 @@
+import { RangeSelector } from '@/components/molecules/RangeSelector';
 import { metricsConfig } from '@/config/metrics';
+import { useState } from 'react';
 import {
   BarChart,
   Bar,
@@ -42,55 +44,82 @@ export function MetricComparison({
   selectedMetric,
   viewType 
 }: MetricComparisonProps) {
-  if (viewType === 'bar') {
-    const ranges = metricsConfig[selectedMetric]?.ranges || [];
+  const [customRange, setCustomRange] = useState<{min: number; max: number} | null>(null);
+  
+  const metric = metricsConfig[selectedMetric];
+  const { min, max } = customRange || metric.defaultRange;
 
+  // Calculate ranges based on min/max
+  const calculateRanges = () => {
+    const step = (max - min) / 10;
+    return Array.from({ length: 11 }, (_, i) => {
+      if (i === 10) return `${max + 1}~`;
+      const rangeStart = min + (step * i);
+      const rangeEnd = min + (step * (i + 1));
+      return `${rangeStart}~${rangeEnd}`;
+    });
+  };
+
+  const handleRangeChange = (newMin: number, newMax: number) => {
+    setCustomRange({ min: newMin, max: newMax });
+  };
+  
+  if (viewType === 'bar') {
+    const ranges = calculateRanges();
     const barData = ranges.map(range => ({
       name: range,
-      [record1Name]: data.filter(d => {
-        const value = d.record1Value;
-        return isInRange(value, range);
-      }).length,
-      [record2Name]: data.filter(d => {
-        const value = d.record2Value;
-        return isInRange(value, range);
-      }).length,
+      [record1Name]: data.filter(d => isInRange(d.record1Value, range)).length,
+      [record2Name]: data.filter(d => isInRange(d.record2Value, range)).length,
     }));
 
     const maxValue = Math.max(
-      ...barData.map(d => Math.max(Number(d[record1Name]), Number(d[record2Name])))
+      // @ts-ignore
+      ...barData.flatMap(d => [d[record1Name], d[record2Name]])
     );
     
     return (
-      <ResponsiveContainer width="100%" height={600}>
-        <BarChart 
-          data={barData}
-          margin={{
-            top: 20,
-            right: 30,
-            left: 20,
-            bottom: 120
-          }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis 
-            dataKey="name" 
-            interval={0}
-            angle={-45}
-            textAnchor="end" 
-            height={100}
-            tick={{
-              fontSize: 12,
-              dy: 25
-            }}
+      <div className="space-y-4">
+        <div className="p-4 border rounded-lg">
+          <h3 className="text-sm font-medium mb-2">Customize Range</h3>
+          <RangeSelector
+            metricKey={selectedMetric}
+            defaultMin={metric.defaultRange.min}
+            defaultMax={metric.defaultRange.max}
+            unit={metric.unit}
+            onRangeChange={handleRangeChange}
           />
-          <YAxis domain={[0, maxValue]} />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey={record1Name} fill="#74c0fc" />
-          <Bar dataKey={record2Name} fill="#ff8787" />
-        </BarChart>
-      </ResponsiveContainer>
+        </div>
+        
+        <ResponsiveContainer width="100%" height={600}>
+          <BarChart 
+            data={barData}
+            margin={{
+              top: 20,
+              right: 30,
+              left: 20,
+              bottom: 120
+            }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis 
+              dataKey="name" 
+              interval={0}
+              angle={-45}
+              textAnchor="end" 
+              height={100}
+              tick={{
+                fontSize: 12,
+                dy: 25
+              }}
+            />
+            <YAxis domain={[0, maxValue]} />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey={record1Name} fill="#74c0fc" />
+            <Bar dataKey={record2Name} fill="#ff8787" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     );
   };
   if (viewType === 'table') {
