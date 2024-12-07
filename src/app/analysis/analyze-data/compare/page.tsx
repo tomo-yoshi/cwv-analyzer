@@ -409,21 +409,28 @@ export default function CompareTwoDataPage() {
                 </div>
 
                 {isMedianMetricsExpanded && (
-                  <div className='grid grid-cols-3 gap-4 bg-white rounded-lg border border-gray-200 p-4'>
+                  <div className='grid grid-cols-4 gap-4 bg-white rounded-lg border border-gray-200 p-4'>
                     <div className='font-medium text-gray-700 pb-2 border-b'>
                       Metric
                     </div>
-                    {selectedRecords.map((recordId) => {
-                      const record = records.find((r) => r.id === recordId);
-                      return (
-                        <div
-                          key={recordId}
-                          className='font-medium text-gray-700 pb-2 border-b'
-                        >
-                          {record?.display_name}
-                        </div>
-                      );
-                    })}
+                    {/* First record name */}
+                    <div className='font-medium text-gray-700 pb-2 border-b'>
+                      {
+                        records.find((r) => r.id === selectedRecords[0])
+                          ?.display_name
+                      }
+                    </div>
+                    {/* Gap column */}
+                    <div className='font-medium text-gray-700 pb-2 border-b text-center'>
+                      {'<>'}
+                    </div>
+                    {/* Second record name */}
+                    <div className='font-medium text-gray-700 pb-2 border-b'>
+                      {
+                        records.find((r) => r.id === selectedRecords[1])
+                          ?.display_name
+                      }
+                    </div>
 
                     {Object.entries(metricsConfig)
                       .filter(([_, config]) => config.enabled)
@@ -435,21 +442,68 @@ export default function CompareTwoDataPage() {
                           return metrics[metric as keyof typeof metrics];
                         });
 
+                        const gap =
+                          medians[0] != null && medians[1] != null
+                            ? Math.abs(medians[1] - medians[0])
+                            : null;
+
+                        const getValueColor = (
+                          value1: number | null,
+                          value2: number | null,
+                          isFirstValue: boolean
+                        ) => {
+                          if (
+                            value1 === null ||
+                            value2 === null ||
+                            value1 === value2
+                          )
+                            return '';
+
+                          const higherIsBetter = config.higherIsBetter ?? false;
+                          const isBetter = higherIsBetter
+                            ? isFirstValue
+                              ? value1 > value2
+                              : value2 > value1
+                            : isFirstValue
+                            ? value1 < value2
+                            : value2 < value1;
+
+                          return isBetter ? 'text-green-500' : 'text-red-500';
+                        };
+
                         return (
                           <Fragment key={metric}>
-                            <div className='text-sm text-gray-600 py-2 border-b border-gray-100'>
+                            <div className='text-sm text-gray-600 py-2 border-b border-gray-100 text-center'>
                               {config.title}
                             </div>
-                            {medians.map((value, idx) => (
-                              <div
-                                key={idx}
-                                className='text-sm py-2 border-b border-gray-100 font-mono'
-                              >
-                                {typeof value === 'number'
-                                  ? (value as number).toFixed(2)
-                                  : 'N/A'}
-                              </div>
-                            ))}
+                            {/* First value */}
+                            <div
+                              className={`text-sm py-2 border-b border-gray-100 font-mono text-center ${getValueColor(
+                                medians[0],
+                                medians[1],
+                                true
+                              )}`}
+                            >
+                              {medians[0] != null
+                                ? Number(medians[0]).toFixed(2)
+                                : 'N/A'}
+                            </div>
+                            {/* Gap value */}
+                            <div className='text-sm py-2 border-b border-gray-100 font-mono text-center'>
+                              {gap != null ? gap.toFixed(2) : 'N/A'}
+                            </div>
+                            {/* Second value */}
+                            <div
+                              className={`text-sm py-2 border-b border-gray-100 font-mono text-center ${getValueColor(
+                                medians[0],
+                                medians[1],
+                                false
+                              )}`}
+                            >
+                              {medians[1] != null
+                                ? Number(medians[1]).toFixed(2)
+                                : 'N/A'}
+                            </div>
                           </Fragment>
                         );
                       })}
