@@ -18,8 +18,8 @@ module.exports = {
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
     'react/no-unescaped-entities': 'off',
-    "@typescript-eslint/no-empty-interface": "off",
-    "@typescript-eslint/ban-ts-comment": "off",
+    '@typescript-eslint/no-empty-interface': 'off',
+    '@typescript-eslint/ban-ts-comment': 'off',
 
     'react/display-name': 'off',
     'react/jsx-curly-brace-presence': [
@@ -42,9 +42,9 @@ module.exports = {
     //#endregion  //*======== Unused Import ===========
 
     //#region  //*=========== Import Sort ===========
-    'simple-import-sort/exports': 'warn',
+    'simple-import-sort/exports': 'off',
     'simple-import-sort/imports': [
-      'warn',
+      'off',
       {
         groups: [
           // ext library & side effect imports
