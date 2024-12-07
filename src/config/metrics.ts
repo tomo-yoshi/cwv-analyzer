@@ -18,105 +18,117 @@ export const metricsConfig: Record<string, MetricConfig> = {
   // Core Web Vitals
   'largest-contentful-paint': {
     title: 'Largest Contentful Paint',
-    description: 'Largest Contentful Paint marks the time at which the largest text or image is painted.',
+    description:
+      'Largest Contentful Paint marks the time at which the largest text or image is painted.',
     enabled: true,
     category: 'Core Web Vitals',
     unit: 'ms',
-    defaultRange: { min: 0, max: 18000 }
+    defaultRange: { min: 0, max: 20000 },
   },
   'first-contentful-paint': {
     title: 'First Contentful Paint',
-    description: 'First Contentful Paint marks the time at which the first text or image is painted.',
+    description:
+      'First Contentful Paint marks the time at which the first text or image is painted.',
     enabled: true,
     category: 'Core Web Vitals',
     unit: 'ms',
-    defaultRange: { min: 0, max: 4000 }
+    defaultRange: { min: 0, max: 10000 },
   },
   'cumulative-layout-shift': {
     title: 'Cumulative Layout Shift',
-    description: 'Cumulative Layout Shift measures the movement of visible elements within the viewport.',
+    description:
+      'Cumulative Layout Shift measures the movement of visible elements within the viewport.',
     enabled: true,
     category: 'Core Web Vitals',
     unit: '',
-    defaultRange: { min: 0, max: 2 }
+    defaultRange: { min: 0, max: 2 },
   },
 
   // Performance Metrics
   'speed-index': {
     title: 'Speed Index',
-    description: 'Speed Index shows how quickly the contents of a page are visibly populated.',
+    description:
+      'Speed Index shows how quickly the contents of a page are visibly populated.',
     enabled: true,
     category: 'Performance',
     unit: 'ms',
-    defaultRange: { min: 0, max: 10000 }
+    defaultRange: { min: 0, max: 10000 },
   },
   'total-blocking-time': {
     title: 'Total Blocking Time',
-    description: 'Sum of all time periods between FCP and Time to Interactive, when task length exceeded 50ms.',
+    description:
+      'Sum of all time periods between FCP and Time to Interactive, when task length exceeded 50ms.',
     enabled: true,
     category: 'Performance',
     unit: 'ms',
-    defaultRange: { min: 0, max: 20000 }
+    defaultRange: { min: 0, max: 20000 },
   },
-  'interactive': {
+  interactive: {
     title: 'Time to Interactive',
-    description: 'Time to Interactive is the amount of time it takes for the page to become fully interactive.',
+    description:
+      'Time to Interactive is the amount of time it takes for the page to become fully interactive.',
     enabled: false,
     category: 'Performance',
     unit: 'ms',
-    defaultRange: { min: 0, max: 17500 }
+    defaultRange: { min: 0, max: 17500 },
   },
   'max-potential-fid': {
     title: 'Max Potential First Input Delay',
-    description: 'The maximum potential First Input Delay that your users could experience.',
+    description:
+      'The maximum potential First Input Delay that your users could experience.',
     enabled: false,
     category: 'Performance',
     unit: 'ms',
-    defaultRange: { min: 0, max: 1000 }
+    defaultRange: { min: 0, max: 1000 },
   },
 
   // Resource Metrics
   'bootup-time': {
     title: 'JavaScript Execution Time',
-    description: 'Consider reducing the time spent parsing, compiling, and executing JS.',
+    description:
+      'Consider reducing the time spent parsing, compiling, and executing JS.',
     enabled: false,
     category: 'Resource',
     unit: 'ms',
-    defaultRange: { min: 0, max: 8000 }
+    defaultRange: { min: 0, max: 8000 },
   },
   'mainthread-work-breakdown': {
     title: 'Main Thread Work',
-    description: 'Consider reducing the time spent parsing, compiling and executing JS.',
+    description:
+      'Consider reducing the time spent parsing, compiling and executing JS.',
     enabled: false,
     category: 'Resource',
     unit: 'ms',
-    defaultRange: { min: 0, max: 8000 }
+    defaultRange: { min: 0, max: 8000 },
   },
   'dom-size': {
     title: 'DOM Size',
-    description: 'A large DOM will increase memory usage and produce costly layout reflows.',
+    description:
+      'A large DOM will increase memory usage and produce costly layout reflows.',
     enabled: false,
     category: 'Resource',
     unit: 'elements',
-    defaultRange: { min: 0, max: 1500 }
+    defaultRange: { min: 0, max: 1500 },
   },
   'total-byte-weight': {
     title: 'Total Byte Weight',
-    description: 'Large network payloads cost users real money and are highly correlated with long load times.',
+    description:
+      'Large network payloads cost users real money and are highly correlated with long load times.',
     enabled: false,
     category: 'Resource',
     unit: 'KiB',
-    defaultRange: { min: 0, max: 5000 }
+    defaultRange: { min: 0, max: 5000 },
   },
 
   // JavaScript Optimization
   'unused-javascript': {
     title: 'Unused JavaScript',
-    description: 'Reduce unused JavaScript and defer loading scripts until they are required.',
+    description:
+      'Reduce unused JavaScript and defer loading scripts until they are required.',
     enabled: false,
     category: 'JavaScript',
     unit: 'KiB',
-    defaultRange: { min: 0, max: 400 }
+    defaultRange: { min: 0, max: 400 },
   },
   'legacy-javascript': {
     title: 'Legacy JavaScript',
@@ -124,7 +136,7 @@ export const metricsConfig: Record<string, MetricConfig> = {
     enabled: false,
     category: 'JavaScript',
     unit: 'KiB',
-    defaultRange: { min: 0, max: 400 }
+    defaultRange: { min: 0, max: 400 },
   },
   'duplicated-javascript': {
     title: 'Duplicated JavaScript',
@@ -132,15 +144,16 @@ export const metricsConfig: Record<string, MetricConfig> = {
     enabled: false,
     category: 'JavaScript',
     unit: 'KiB',
-    defaultRange: { min: 0, max: 400 }
+    defaultRange: { min: 0, max: 400 },
   },
   'unminified-javascript': {
     title: 'Unminified JavaScript',
-    description: 'Minifying JavaScript files can reduce payload sizes and script parse time.',
+    description:
+      'Minifying JavaScript files can reduce payload sizes and script parse time.',
     enabled: false,
     category: 'JavaScript',
     unit: 'KiB',
-    defaultRange: { min: 0, max: 400 }
+    defaultRange: { min: 0, max: 400 },
   },
 
   // CSS Optimization
@@ -150,25 +163,27 @@ export const metricsConfig: Record<string, MetricConfig> = {
     enabled: false,
     category: 'CSS',
     unit: 'KiB',
-    defaultRange: { min: 0, max: 400 }
+    defaultRange: { min: 0, max: 400 },
   },
   'unused-css-rules': {
     title: 'Unused CSS Rules',
-    description: 'Reduce unused rules from stylesheets and defer CSS not used for above-the-fold content.',
+    description:
+      'Reduce unused rules from stylesheets and defer CSS not used for above-the-fold content.',
     enabled: false,
     category: 'CSS',
     unit: 'KiB',
-    defaultRange: { min: 0, max: 400 }
+    defaultRange: { min: 0, max: 400 },
   },
 
   // Network
   'network-rtt': {
     title: 'Network Round Trip Times',
-    description: 'Network round trip times (RTT) have a large impact on performance.',
+    description:
+      'Network round trip times (RTT) have a large impact on performance.',
     enabled: false,
     category: 'Network',
     unit: 'ms',
-    defaultRange: { min: 0, max: 1000 }
+    defaultRange: { min: 0, max: 1000 },
   },
   'network-server-latency': {
     title: 'Server Backend Latencies',
@@ -176,25 +191,27 @@ export const metricsConfig: Record<string, MetricConfig> = {
     enabled: false,
     category: 'Network',
     unit: 'ms',
-    defaultRange: { min: 0, max: 1000 }
+    defaultRange: { min: 0, max: 1000 },
   },
   'server-response-time': {
     title: 'Server Response Time',
-    description: 'Keep the server response time for the main document short because all other requests depend on it.',
+    description:
+      'Keep the server response time for the main document short because all other requests depend on it.',
     enabled: false,
     category: 'Network',
     unit: 'ms',
-    defaultRange: { min: 0, max: 1000 }
+    defaultRange: { min: 0, max: 1000 },
   },
 
   // Image Optimization
   'modern-image-formats': {
     title: 'Modern Image Formats',
-    description: 'Image formats like WebP and AVIF often provide better compression than PNG or JPEG.',
+    description:
+      'Image formats like WebP and AVIF often provide better compression than PNG or JPEG.',
     enabled: false,
     category: 'Images',
     unit: 'KiB',
-    defaultRange: { min: 0, max: 400 }
+    defaultRange: { min: 0, max: 400 },
   },
   'uses-optimized-images': {
     title: 'Optimized Images',
@@ -202,23 +219,25 @@ export const metricsConfig: Record<string, MetricConfig> = {
     enabled: false,
     category: 'Images',
     unit: 'KiB',
-    defaultRange: { min: 0, max: 400 }
+    defaultRange: { min: 0, max: 400 },
   },
   'uses-responsive-images': {
     title: 'Responsive Images',
-    description: 'Serve images that are appropriately-sized to save cellular data and improve load time.',
+    description:
+      'Serve images that are appropriately-sized to save cellular data and improve load time.',
     enabled: false,
     category: 'Images',
     unit: 'KiB',
-    defaultRange: { min: 0, max: 400 }
+    defaultRange: { min: 0, max: 400 },
   },
   'offscreen-images': {
     title: 'Offscreen Images',
-    description: 'Consider lazy-loading offscreen and hidden images after all critical resources have finished loading.',
+    description:
+      'Consider lazy-loading offscreen and hidden images after all critical resources have finished loading.',
     enabled: false,
     category: 'Images',
     unit: 'KiB',
-    defaultRange: { min: 0, max: 400 }
+    defaultRange: { min: 0, max: 400 },
   },
   'efficient-animated-content': {
     title: 'Efficient Animated Content',
@@ -226,17 +245,18 @@ export const metricsConfig: Record<string, MetricConfig> = {
     enabled: false,
     category: 'Images',
     unit: 'KiB',
-    defaultRange: { min: 0, max: 400 }
+    defaultRange: { min: 0, max: 400 },
   },
 
   // Other
-  'redirects': {
+  redirects: {
     title: 'Redirects',
-    description: 'Redirects introduce additional delays before the page can be loaded.',
+    description:
+      'Redirects introduce additional delays before the page can be loaded.',
     enabled: false,
     category: 'Other',
     unit: 'count',
-    defaultRange: { min: 0, max: 4 }
+    defaultRange: { min: 0, max: 4 },
   },
   'render-blocking-resources': {
     title: 'Render-Blocking Resources',
@@ -244,7 +264,7 @@ export const metricsConfig: Record<string, MetricConfig> = {
     enabled: false,
     category: 'Other',
     unit: 'count',
-    defaultRange: { min: 0, max: 7 }
+    defaultRange: { min: 0, max: 7 },
   },
   'prioritize-lcp-image': {
     title: 'Prioritize LCP Image',
@@ -252,8 +272,8 @@ export const metricsConfig: Record<string, MetricConfig> = {
     enabled: false,
     category: 'Other',
     unit: 'count',
-    defaultRange: { min: 0, max: 4 }
-  }
+    defaultRange: { min: 0, max: 4 },
+  },
 };
 
 // Helper functions remain the same but need to be updated to use the new range format
@@ -263,10 +283,10 @@ export function getMetricRange(metricKey: string, value: number): string {
 
   const { min, max } = metric.customRange || metric.defaultRange;
   const step = (max - min) / 10;
-  
+
   for (let i = 0; i < 10; i++) {
-    const rangeStart = min + (step * i);
-    const rangeEnd = i === 9 ? max : min + (step * (i + 1));
+    const rangeStart = min + step * i;
+    const rangeEnd = i === 9 ? max : min + step * (i + 1);
     if (value >= rangeStart && value <= rangeEnd) {
       return `${rangeStart}~${rangeEnd}`;
     }
