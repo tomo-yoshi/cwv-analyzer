@@ -1,4 +1,11 @@
 export interface MetricConfig {
+  [x: string]:
+    | string
+    | boolean
+    | {
+        min: number;
+        max: number;
+      };
   title: string;
   description: string;
   enabled: boolean;
@@ -8,10 +15,13 @@ export interface MetricConfig {
     min: number;
     max: number;
   };
-  customRange?: {
-    min: number;
-    max: number;
-  };
+  // @ts-ignore
+  customRange?:
+    | {
+        min: number;
+        max: number;
+      }
+    | undefined;
 }
 
 export const metricsConfig: Record<string, MetricConfig> = {
