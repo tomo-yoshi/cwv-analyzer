@@ -4,7 +4,14 @@ import { Fragment, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { createClient } from '@/lib/supabase/client';
 import { useOrgAndProjStore } from '@/store/orgAndProjStore';
-import { BarChart3, Search, TableIcon, Trash2 } from 'lucide-react';
+import {
+  BarChart3,
+  ChevronDown,
+  ChevronUp,
+  Search,
+  TableIcon,
+  Trash2,
+} from 'lucide-react';
 import Button from '@/components/atoms/buttons/Button';
 import Input from '@/components/atoms/inputs/Input';
 import Select from '@/components/atoms/selects/Select';
@@ -48,6 +55,7 @@ export default function CompareTwoDataPage() {
   const [creatorFilter, setCreatorFilter] = useState('');
   const [selectedMetric, setSelectedMetric] = useState<string>('');
   const [viewType, setViewType] = useState<'bar' | 'table'>('bar');
+  const [isMedianMetricsExpanded, setIsMedianMetricsExpanded] = useState(false);
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -384,45 +392,69 @@ export default function CompareTwoDataPage() {
           {selectedRecords.length === 2 ? (
             <div className='space-y-6'>
               <div className='space-y-4'>
-                <h2 className='text-xl font-semibold'>
-                  Median Metrics Comparison
-                </h2>
+                <div
+                  className='flex items-center justify-between p-3 rounded-lg
+                    hover:bg-gray-50 cursor-pointer transition-colors
+                    border border-gray-200 hover:border-primary-300'
+                  onClick={() =>
+                    setIsMedianMetricsExpanded(!isMedianMetricsExpanded)
+                  }
+                >
+                  <h2 className='text-lg'>Median Metrics Comparison</h2>
+                  {isMedianMetricsExpanded ? (
+                    <ChevronUp className='h-5 w-5 text-gray-500' />
+                  ) : (
+                    <ChevronDown className='h-5 w-5 text-gray-500' />
+                  )}
+                </div>
 
-                <div className='grid grid-cols-3 gap-4'>
-                  <div className='font-medium'>Metric</div>
-                  {selectedRecords.map((recordId) => {
-                    const record = records.find((r) => r.id === recordId);
-                    return (
-                      <div key={recordId} className='font-medium'>
-                        {record?.display_name}
-                      </div>
-                    );
-                  })}
-
-                  {Object.entries(metricsConfig)
-                    .filter(([_, config]) => config.enabled)
-                    .map(([metric, config]) => {
-                      const medians = selectedRecords.map((recordId) => {
-                        const record = records.find((r) => r.id === recordId);
-                        if (!record) return null;
-                        const metrics = calculateMedianMetrics(record);
-                        return metrics[metric as keyof typeof metrics];
-                      });
-
+                {isMedianMetricsExpanded && (
+                  <div className='grid grid-cols-3 gap-4 bg-white rounded-lg border border-gray-200 p-4'>
+                    <div className='font-medium text-gray-700 pb-2 border-b'>
+                      Metric
+                    </div>
+                    {selectedRecords.map((recordId) => {
+                      const record = records.find((r) => r.id === recordId);
                       return (
-                        <Fragment key={metric}>
-                          <div className='text-sm'>{config.title}</div>
-                          {medians.map((value, idx) => (
-                            <div key={idx} className='text-sm'>
-                              {typeof value === 'number'
-                                ? (value as number).toFixed(2)
-                                : 'N/A'}
-                            </div>
-                          ))}
-                        </Fragment>
+                        <div
+                          key={recordId}
+                          className='font-medium text-gray-700 pb-2 border-b'
+                        >
+                          {record?.display_name}
+                        </div>
                       );
                     })}
-                </div>
+
+                    {Object.entries(metricsConfig)
+                      .filter(([_, config]) => config.enabled)
+                      .map(([metric, config]) => {
+                        const medians = selectedRecords.map((recordId) => {
+                          const record = records.find((r) => r.id === recordId);
+                          if (!record) return null;
+                          const metrics = calculateMedianMetrics(record);
+                          return metrics[metric as keyof typeof metrics];
+                        });
+
+                        return (
+                          <Fragment key={metric}>
+                            <div className='text-sm text-gray-600 py-2 border-b border-gray-100'>
+                              {config.title}
+                            </div>
+                            {medians.map((value, idx) => (
+                              <div
+                                key={idx}
+                                className='text-sm py-2 border-b border-gray-100 font-mono'
+                              >
+                                {typeof value === 'number'
+                                  ? (value as number).toFixed(2)
+                                  : 'N/A'}
+                              </div>
+                            ))}
+                          </Fragment>
+                        );
+                      })}
+                  </div>
+                )}
 
                 <div className='flex-1'>
                   <Select
