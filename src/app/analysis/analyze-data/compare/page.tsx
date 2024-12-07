@@ -393,14 +393,14 @@ export default function CompareTwoDataPage() {
             <div className='space-y-6'>
               <div className='space-y-4'>
                 <div
-                  className='flex items-center justify-between p-3 rounded-lg
+                  className='flex items-center justify-between p-2 rounded-lg
                     hover:bg-gray-50 cursor-pointer transition-colors
                     border border-gray-200 hover:border-primary-300'
                   onClick={() =>
                     setIsMedianMetricsExpanded(!isMedianMetricsExpanded)
                   }
                 >
-                  <h2 className='text-lg'>Median Metrics Comparison</h2>
+                  <h2 className='text-md'>Median Metrics Comparison</h2>
                   {isMedianMetricsExpanded ? (
                     <ChevronUp className='h-5 w-5 text-gray-500' />
                   ) : (

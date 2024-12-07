@@ -13,6 +13,7 @@ import PageSpeedMedian from '@/components/organisms/PageSpeedMedian';
 
 import { useOrgAndProjStore } from '@/store/orgAndProjStore';
 
+import { Search } from 'lucide-react';
 import Input from '@/components/atoms/inputs/Input';
 import Select from '@/components/atoms/selects/Select';
 
