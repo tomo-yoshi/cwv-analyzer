@@ -127,7 +127,7 @@ export default function CompareTwoDataPage() {
     if (!firstTest || !firstTest.metrics) return [];
 
     return [
-      { value: '', label: 'Select Metric', category: '' }, // Add this line
+      { value: '', label: 'Select Metric', category: '' },
       ...Object.entries(firstTest.metrics)
         .filter(([key, value]: [string, any]) => {
           const isEnabled = metricsConfig[key]?.enabled ?? false;
@@ -277,9 +277,10 @@ export default function CompareTwoDataPage() {
   const calculateMedianMetrics = (record: PageSpeedRecord) => {
     if (!record?.records.length) return {};
 
-    const metrics = Object.keys(record.records[0].metrics).filter(
-      (key) => metricsConfig[key]?.enabled
-    );
+    // const metrics = Object.keys(record.records[0].metrics).filter(
+    //   (key) => metricsConfig[key]?.enabled
+    // );
+    const metrics = Object.keys(record.records[0].metrics);
 
     return metrics.reduce((acc, metric) => {
       const values = record.records
@@ -433,7 +434,7 @@ export default function CompareTwoDataPage() {
                     </div>
 
                     {Object.entries(metricsConfig)
-                      .filter(([_, config]) => config.enabled)
+                      // .filter(([_, config]) => config.enabled)
                       .map(([metric, config]) => {
                         const medians = selectedRecords.map((recordId) => {
                           const record = records.find((r) => r.id === recordId);
