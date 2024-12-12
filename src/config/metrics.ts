@@ -77,16 +77,16 @@ export const metricsConfig: Record<string, MetricConfig> = {
     title: 'Time to Interactive',
     description:
       'Time to Interactive is the amount of time it takes for the page to become fully interactive.',
-    enabled: false,
+    enabled: true,
     category: 'Performance',
     unit: 'ms',
-    defaultRange: { min: 0, max: 17500 },
+    defaultRange: { min: 0, max: 20000 },
   },
   'max-potential-fid': {
     title: 'Max Potential First Input Delay',
     description:
       'The maximum potential First Input Delay that your users could experience.',
-    enabled: false,
+    enabled: true,
     category: 'Performance',
     unit: 'ms',
     defaultRange: { min: 0, max: 1000 },
@@ -97,37 +97,37 @@ export const metricsConfig: Record<string, MetricConfig> = {
     title: 'JavaScript Execution Time',
     description:
       'Consider reducing the time spent parsing, compiling, and executing JS.',
-    enabled: false,
+    enabled: true,
     category: 'Resource',
     unit: 'ms',
-    defaultRange: { min: 0, max: 8000 },
+    defaultRange: { min: 0, max: 10000 },
   },
   'mainthread-work-breakdown': {
     title: 'Main Thread Work',
     description:
       'Consider reducing the time spent parsing, compiling and executing JS.',
-    enabled: false,
+    enabled: true,
     category: 'Resource',
     unit: 'ms',
-    defaultRange: { min: 0, max: 8000 },
+    defaultRange: { min: 0, max: 15000 },
   },
   'dom-size': {
     title: 'DOM Size',
     description:
       'A large DOM will increase memory usage and produce costly layout reflows.',
-    enabled: false,
+    enabled: true,
     category: 'Resource',
     unit: 'elements',
-    defaultRange: { min: 0, max: 1500 },
+    defaultRange: { min: 0, max: 2000 },
   },
   'total-byte-weight': {
     title: 'Total Byte Weight',
     description:
       'Large network payloads cost users real money and are highly correlated with long load times.',
-    enabled: false,
+    enabled: true,
     category: 'Resource',
     unit: 'KiB',
-    defaultRange: { min: 0, max: 5000 },
+    defaultRange: { min: 0, max: 2000000 },
   },
 
   // JavaScript Optimization
@@ -135,15 +135,15 @@ export const metricsConfig: Record<string, MetricConfig> = {
     title: 'Unused JavaScript',
     description:
       'Reduce unused JavaScript and defer loading scripts until they are required.',
-    enabled: false,
+    enabled: true,
     category: 'JavaScript',
     unit: 'KiB',
-    defaultRange: { min: 0, max: 400 },
+    defaultRange: { min: 0, max: 5000 },
   },
   'legacy-javascript': {
     title: 'Legacy JavaScript',
     description: 'Avoid serving legacy JavaScript to modern browsers.',
-    enabled: false,
+    enabled: true,
     category: 'JavaScript',
     unit: 'KiB',
     defaultRange: { min: 0, max: 400 },
@@ -179,7 +179,7 @@ export const metricsConfig: Record<string, MetricConfig> = {
     title: 'Unused CSS Rules',
     description:
       'Reduce unused rules from stylesheets and defer CSS not used for above-the-fold content.',
-    enabled: false,
+    enabled: true,
     category: 'CSS',
     unit: 'KiB',
     defaultRange: { min: 0, max: 400 },
@@ -190,27 +190,27 @@ export const metricsConfig: Record<string, MetricConfig> = {
     title: 'Network Round Trip Times',
     description:
       'Network round trip times (RTT) have a large impact on performance.',
-    enabled: false,
+    enabled: true,
     category: 'Network',
     unit: 'ms',
-    defaultRange: { min: 0, max: 1000 },
+    defaultRange: { min: 0, max: 500 },
   },
   'network-server-latency': {
     title: 'Server Backend Latencies',
     description: 'Server latencies can impact web performance.',
-    enabled: false,
+    enabled: true,
     category: 'Network',
     unit: 'ms',
-    defaultRange: { min: 0, max: 1000 },
+    defaultRange: { min: 0, max: 500 },
   },
   'server-response-time': {
     title: 'Server Response Time',
     description:
       'Keep the server response time for the main document short because all other requests depend on it.',
-    enabled: false,
+    enabled: true,
     category: 'Network',
     unit: 'ms',
-    defaultRange: { min: 0, max: 1000 },
+    defaultRange: { min: 0, max: 2000 },
   },
 
   // Image Optimization
@@ -271,18 +271,18 @@ export const metricsConfig: Record<string, MetricConfig> = {
   'render-blocking-resources': {
     title: 'Render-Blocking Resources',
     description: 'Resources are blocking the first paint of your page.',
-    enabled: false,
+    enabled: true,
     category: 'Other',
     unit: 'count',
-    defaultRange: { min: 0, max: 7 },
+    defaultRange: { min: 0, max: 1000 },
   },
   'prioritize-lcp-image': {
     title: 'Prioritize LCP Image',
     description: 'Preload the LCP image to improve LCP time.',
-    enabled: false,
+    enabled: true,
     category: 'Other',
     unit: 'count',
-    defaultRange: { min: 0, max: 4 },
+    defaultRange: { min: 0, max: 1000 },
   },
 };
 

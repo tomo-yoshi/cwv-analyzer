@@ -277,10 +277,9 @@ export default function CompareTwoDataPage() {
   const calculateMedianMetrics = (record: PageSpeedRecord) => {
     if (!record?.records.length) return {};
 
-    // const metrics = Object.keys(record.records[0].metrics).filter(
-    //   (key) => metricsConfig[key]?.enabled
-    // );
-    const metrics = Object.keys(record.records[0].metrics);
+    const metrics = Object.keys(record.records[0].metrics).filter(
+      (key) => metricsConfig[key]?.enabled
+    );
 
     return metrics.reduce((acc, metric) => {
       const values = record.records
@@ -434,7 +433,7 @@ export default function CompareTwoDataPage() {
                     </div>
 
                     {Object.entries(metricsConfig)
-                      // .filter(([_, config]) => config.enabled)
+                      .filter(([_, config]) => config.enabled)
                       .map(([metric, config]) => {
                         const medians = selectedRecords.map((recordId) => {
                           const record = records.find((r) => r.id === recordId);
