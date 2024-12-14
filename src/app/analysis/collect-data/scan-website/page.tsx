@@ -531,19 +531,21 @@ export default function ScanWebsitePage() {
                 className='flex-1'
                 disabled={isRunning}
               />
-              <Button
-                onClick={fetchSitemap}
-                disabled={loading || !websiteUrl || isRunning}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className='animate-spin mr-2' />
-                    Loading...
-                  </>
-                ) : (
-                  'Fetch Sitemap'
-                )}
-              </Button>
+              <div className='w-44'>
+                <Button
+                  onClick={fetchSitemap}
+                  disabled={loading || !websiteUrl || isRunning}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className='animate-spin mr-2' />
+                      Loading...
+                    </>
+                  ) : (
+                    'Fetch Sitemap'
+                  )}
+                </Button>
+              </div>
             </div>
 
             {error && <div className='text-red-500 text-sm'>{error}</div>}
