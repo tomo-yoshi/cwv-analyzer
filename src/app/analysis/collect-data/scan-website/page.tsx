@@ -515,6 +515,9 @@ export default function ScanWebsitePage() {
   return (
     <div className='flex-1'>
       <div className='w-full max-w-7xl mx-auto p-8'>
+        <div className='mb-6'>
+          <h1 className='text-2xl font-bold mb-2'>Scan Website</h1>
+        </div>
         <div className='space-y-6'>
           <div className='space-y-4'>
             <div className='flex gap-4'>
