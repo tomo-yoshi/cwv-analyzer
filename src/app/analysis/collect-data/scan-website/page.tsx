@@ -368,8 +368,12 @@ export default function ScanWebsitePage() {
                 value={websiteUrl}
                 onChange={(e) => setWebsiteUrl(e.target.value)}
                 className='flex-1'
+                disabled={isRunning}
               />
-              <Button onClick={fetchSitemap} disabled={loading || !websiteUrl}>
+              <Button
+                onClick={fetchSitemap}
+                disabled={loading || !websiteUrl || isRunning}
+              >
                 {loading ? (
                   <>
                     <Loader2 className='animate-spin mr-2' />
@@ -389,6 +393,7 @@ export default function ScanWebsitePage() {
                   placeholder='Override base URL (optional)'
                   value={overrideBaseUrl}
                   onChange={(e) => setOverrideBaseUrl(e.target.value)}
+                  disabled={isRunning}
                 />
 
                 <div className='flex justify-between items-center'>
@@ -401,6 +406,7 @@ export default function ScanWebsitePage() {
                         checked={isConcurrentMode}
                         onChange={setIsConcurrentMode}
                         aria-label='Scan mode toggle'
+                        disabled={isRunning}
                       />
                       <span className='text-sm text-gray-600'>
                         {isConcurrentMode
@@ -475,6 +481,7 @@ export default function ScanWebsitePage() {
                                 }))
                               );
                             }}
+                            disabled={isRunning}
                           />
                         </th>
                         <th className='px-4 py-2 text-left'>URL</th>
@@ -515,6 +522,7 @@ export default function ScanWebsitePage() {
                                 type='checkbox'
                                 checked={url.selected}
                                 onChange={() => toggleUrlSelection(index)}
+                                disabled={isRunning}
                               />
                             </td>
                             <td className='px-4 py-2 font-mono text-sm'>
