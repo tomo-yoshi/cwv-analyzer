@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { XMLParser } from 'fast-xml-parser';
 import Button from '@/components/atoms/buttons/Button';
 import Input from '@/components/atoms/inputs/Input';
 import { Loader2 } from 'lucide-react';
 import { Switch } from '@/components/atoms/switches/Switch';
+import { X } from 'lucide-react';
 
 interface SitemapURL {
   loc: string;
@@ -22,6 +23,9 @@ interface MetricThresholds {
   poor: number;
   unit: 'seconds' | 'score' | 'milliseconds' | 'raw';
 }
+
+type SortField = 'performance' | 'fcp' | 'lcp' | 'tbt' | 'cls' | 'speedIndex';
+type SortDirection = 'asc' | 'desc';
 
 const metricThresholds: Record<string, MetricThresholds> = {
   'first-contentful-paint': { good: 1.8, poor: 3.0, unit: 'seconds' },
@@ -74,7 +78,6 @@ const chunkArray = <T,>(array: T[], size: number): T[][] => {
   return chunks;
 };
 
-// Helper function for delay
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function ScanWebsitePage() {
@@ -88,6 +91,9 @@ export default function ScanWebsitePage() {
   const [abortController, setAbortController] =
     useState<AbortController | null>(null);
   const [completedTests, setCompletedTests] = useState(0);
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [showOnlyCompleted, setShowOnlyCompleted] = useState(false);
 
   const stopTests = () => {
     if (abortController) {
@@ -355,7 +361,156 @@ export default function ScanWebsitePage() {
     }
   };
 
+  // Add sorting function
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Toggle direction if clicking the same field
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new field and default to descending
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
+
+  // Add function to get metric value for sorting
+  const getMetricValue = (url: SitemapURL, field: SortField): number => {
+    const metrics = url.result?.data?.lighthouseResult?.audits;
+    const performanceScore =
+      url.result?.data?.lighthouseResult?.categories?.performance?.score;
+
+    switch (field) {
+      case 'performance':
+        return performanceScore || -1;
+      case 'fcp':
+        return metrics?.['first-contentful-paint']?.numericValue || Infinity;
+      case 'lcp':
+        return metrics?.['largest-contentful-paint']?.numericValue || Infinity;
+      case 'tbt':
+        return metrics?.['total-blocking-time']?.numericValue || Infinity;
+      case 'cls':
+        return metrics?.['cumulative-layout-shift']?.numericValue || Infinity;
+      case 'speedIndex':
+        return metrics?.['speed-index']?.numericValue || Infinity;
+      default:
+        return 0;
+    }
+  };
+
+  // Sort the URLs
+  const resetSort = () => {
+    setSortField(null);
+    setSortDirection('desc');
+  };
+
+  const SortIndicator = ({
+    active,
+    direction,
+  }: {
+    active: boolean;
+    direction: SortDirection;
+  }) => {
+    if (!active) {
+      return (
+        <svg className='w-4 h-4 text-gray-300' viewBox='0 0 24 24'>
+          <path fill='currentColor' d='M7 10l5 5 5-5z' />
+        </svg>
+      );
+    }
+
+    return (
+      <svg
+        className='w-4 h-4 text-gray-700'
+        viewBox='0 0 24 24'
+        style={{ transform: direction === 'desc' ? 'rotate(180deg)' : 'none' }}
+      >
+        <path fill='currentColor' d='M7 10l5 5 5-5z' />
+      </svg>
+    );
+  };
+
+  // Update the SortHeader component to include the reset button
+  const SortHeader = ({
+    field,
+    label,
+    currentSort,
+    direction,
+    onSort,
+    onReset,
+  }: {
+    field: SortField;
+    label: string;
+    currentSort: SortField | null;
+    direction: SortDirection;
+    onSort: (field: SortField) => void;
+    onReset: () => void;
+  }) => {
+    return (
+      <th className='px-4 py-2 text-left'>
+        <div className='flex items-center justify-between group'>
+          <div
+            className='flex items-center gap-1 select-none cursor-pointer hover:text-gray-700'
+            onClick={() => onSort(field)}
+          >
+            <span>{label}</span>
+            <SortIndicator
+              active={currentSort === field}
+              direction={direction}
+            />
+          </div>
+          {currentSort === field && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onReset();
+              }}
+              className='hidden group-hover:flex items-center justify-center w-5 h-5 rounded-full hover:bg-gray-200'
+              title='Reset sort'
+            >
+              <X className='w-3 h-3 text-gray-500' />
+            </button>
+          )}
+        </div>
+      </th>
+    );
+  };
+
   const selectedCount = sitemapUrls.filter((url) => url.selected).length;
+
+  const filteredAndSortedUrls = useMemo(() => {
+    let urls = [...sitemapUrls];
+
+    // Apply completion filter if enabled
+    if (showOnlyCompleted) {
+      urls = urls.filter(
+        (url) =>
+          url.result?.data?.lighthouseResult?.categories?.performance?.score !==
+          undefined
+      );
+    }
+
+    // Apply sorting
+    if (sortField) {
+      urls.sort((a, b) => {
+        const aValue = getMetricValue(a, sortField);
+        const bValue = getMetricValue(b, sortField);
+
+        if (aValue === bValue) return 0;
+
+        const multiplier = sortDirection === 'asc' ? 1 : -1;
+
+        // Handle special case for performance (higher is better)
+        if (sortField === 'performance') {
+          return (bValue - aValue) * multiplier;
+        }
+
+        // For other metrics, lower is better
+        return (aValue - bValue) * multiplier;
+      });
+    }
+
+    return urls;
+  }, [sitemapUrls, showOnlyCompleted, sortField, sortDirection]);
 
   return (
     <div className='flex-1'>
@@ -401,18 +556,30 @@ export default function ScanWebsitePage() {
                     <div className='text-sm text-gray-600'>
                       {selectedCount} of {sitemapUrls.length} URLs selected
                     </div>
-                    <div className='flex items-center space-x-2'>
-                      <Switch
-                        checked={isConcurrentMode}
-                        onChange={setIsConcurrentMode}
-                        aria-label='Scan mode toggle'
-                        disabled={isRunning}
-                      />
-                      <span className='text-sm text-gray-600'>
-                        {isConcurrentMode
-                          ? 'Concurrent Mode'
-                          : 'Sequential Mode'}
-                      </span>
+                    <div className='flex items-center space-x-4'>
+                      <div className='flex items-center space-x-2'>
+                        <Switch
+                          checked={isConcurrentMode}
+                          onChange={setIsConcurrentMode}
+                          disabled={isRunning}
+                          aria-label=''
+                        />
+                        <span className='text-sm text-gray-600'>
+                          {isConcurrentMode
+                            ? 'Concurrent Mode'
+                            : 'Sequential Mode'}
+                        </span>
+                      </div>
+                      <div className='flex items-center space-x-2'>
+                        <Switch
+                          checked={showOnlyCompleted}
+                          onChange={setShowOnlyCompleted}
+                          aria-label=''
+                        />
+                        <span className='text-sm text-gray-600'>
+                          Show only completed tests
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <Button
@@ -422,7 +589,7 @@ export default function ScanWebsitePage() {
                   >
                     {isRunning ? (
                       <>
-                        {/* <Loader2 className="animate-spin mr-2 h-4 w-4" /> */}
+                        <Loader2 className='animate-spin mr-2 h-4 w-4' />
                         Stop Tests
                       </>
                     ) : (
@@ -486,28 +653,58 @@ export default function ScanWebsitePage() {
                         </th>
                         <th className='px-4 py-2 text-left'>URL</th>
                         <th className='px-4 py-2 text-left'>Status</th>
-                        <th className='px-4 py-2 text-left whitespace-nowrap'>
-                          Performance
-                        </th>
-                        <th className='px-4 py-2 text-left whitespace-nowrap'>
-                          FCP
-                        </th>
-                        <th className='px-4 py-2 text-left whitespace-nowrap'>
-                          LCP
-                        </th>
-                        <th className='px-4 py-2 text-left whitespace-nowrap'>
-                          TBT
-                        </th>
-                        <th className='px-4 py-2 text-left whitespace-nowrap'>
-                          CLS
-                        </th>
-                        <th className='px-4 py-2 text-left whitespace-nowrap'>
-                          Speed Index
-                        </th>
+                        <SortHeader
+                          field='performance'
+                          label='Performance'
+                          currentSort={sortField}
+                          direction={sortDirection}
+                          onSort={handleSort}
+                          onReset={resetSort}
+                        />
+                        <SortHeader
+                          field='fcp'
+                          label='FCP'
+                          currentSort={sortField}
+                          direction={sortDirection}
+                          onSort={handleSort}
+                          onReset={resetSort}
+                        />
+                        <SortHeader
+                          field='lcp'
+                          label='LCP'
+                          currentSort={sortField}
+                          direction={sortDirection}
+                          onSort={handleSort}
+                          onReset={resetSort}
+                        />
+                        <SortHeader
+                          field='tbt'
+                          label='TBT'
+                          currentSort={sortField}
+                          direction={sortDirection}
+                          onSort={handleSort}
+                          onReset={resetSort}
+                        />
+                        <SortHeader
+                          field='cls'
+                          label='CLS'
+                          currentSort={sortField}
+                          direction={sortDirection}
+                          onSort={handleSort}
+                          onReset={resetSort}
+                        />
+                        <SortHeader
+                          field='speedIndex'
+                          label='Speed Index'
+                          currentSort={sortField}
+                          direction={sortDirection}
+                          onSort={handleSort}
+                          onReset={resetSort}
+                        />
                       </tr>
                     </thead>
                     <tbody>
-                      {sitemapUrls.map((url, index) => {
+                      {filteredAndSortedUrls.map((url: any, index: number) => {
                         const metrics =
                           url.result?.data?.lighthouseResult?.audits;
                         const performanceScore =
