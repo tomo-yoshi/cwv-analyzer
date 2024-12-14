@@ -283,12 +283,22 @@ export default function CompareTwoDataPage() {
 
     return metrics.reduce((acc, metric) => {
       const values = record.records
-        .map((r) => r.metrics[metric]?.numericValue)
-        .filter(Boolean)
+        .map((r) => {
+          const value = r.metrics[metric]?.numericValue;
+          // Handle both numeric strings and numbers
+          return typeof value === 'string' ? parseFloat(value) : value;
+        })
+        .filter(
+          (value) => value !== undefined && value !== null && !isNaN(value)
+        )
         .sort((a, b) => a - b);
+
       const mid = Math.floor(values.length / 2);
-      (acc as Record<string, number>)[metric] =
-        values.length % 2 ? values[mid] : (values[mid - 1] + values[mid]) / 2;
+      (acc as Record<string, number>)[metric] = values.length
+        ? values.length % 2
+          ? values[mid]
+          : (values[mid - 1] + values[mid]) / 2
+        : null;
 
       return acc;
     }, {});
