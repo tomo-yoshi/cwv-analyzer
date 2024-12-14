@@ -7,6 +7,7 @@ import Input from '@/components/atoms/inputs/Input';
 import { Loader2 } from 'lucide-react';
 import { Switch } from '@/components/atoms/switches/Switch';
 import { X } from 'lucide-react';
+import Select from '@/components/atoms/selects/Select';
 
 interface SitemapURL {
   loc: string;
@@ -26,6 +27,7 @@ interface MetricThresholds {
 
 type SortField = 'performance' | 'fcp' | 'lcp' | 'tbt' | 'cls' | 'speedIndex';
 type SortDirection = 'asc' | 'desc';
+type Strategy = 'mobile' | 'desktop';
 
 const metricThresholds: Record<string, MetricThresholds> = {
   'first-contentful-paint': { good: 1.8, poor: 3.0, unit: 'seconds' },
@@ -94,6 +96,7 @@ export default function ScanWebsitePage() {
   const [sortField, setSortField] = useState<SortField | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [showOnlyCompleted, setShowOnlyCompleted] = useState(false);
+  const [strategy, setStrategy] = useState<Strategy>('mobile');
 
   const stopTests = () => {
     if (abortController) {
@@ -183,7 +186,7 @@ export default function ScanWebsitePage() {
               const response = await fetch(
                 `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(
                   testUrl
-                )}&strategy=mobile`,
+                )}&strategy=${strategy}`,
                 { signal: controller.signal }
               );
 
@@ -574,6 +577,19 @@ export default function ScanWebsitePage() {
                         </span>
                       </div>
                       <div className='flex items-center space-x-2'>
+                        <Select
+                          value={strategy}
+                          onChange={(value) =>
+                            setStrategy(value as 'mobile' | 'desktop')
+                          }
+                          options={[
+                            { value: 'mobile', label: 'Mobile' },
+                            { value: 'desktop', label: 'Desktop' },
+                          ]}
+                          disabled={isRunning}
+                        />
+                      </div>
+                      <div className='flex items-center space-x-2'>
                         <Switch
                           checked={showOnlyCompleted}
                           onChange={setShowOnlyCompleted}
@@ -590,14 +606,7 @@ export default function ScanWebsitePage() {
                     disabled={!sitemapUrls.some((url) => url.selected)}
                     variant={isRunning ? 'outline' : 'primary'}
                   >
-                    {isRunning ? (
-                      <>
-                        <Loader2 className='animate-spin mr-2 h-4 w-4' />
-                        Stop Tests
-                      </>
-                    ) : (
-                      'Run PageSpeed Tests'
-                    )}
+                    {isRunning ? <>Stop Tests</> : 'Run PageSpeed Tests'}
                   </Button>
                 </div>
 
