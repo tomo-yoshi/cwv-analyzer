@@ -378,25 +378,41 @@ export default function ScanWebsitePage() {
 
   // Add function to get metric value for sorting
   const getMetricValue = (url: SitemapURL, field: SortField): number => {
-    const metrics = url.result?.data?.lighthouseResult?.audits;
+    if (!url.result?.data?.lighthouseResult?.audits) {
+      return Infinity; // Return Infinity for URLs without results
+    }
+
+    const metrics = url.result.data.lighthouseResult.audits;
     const performanceScore =
-      url.result?.data?.lighthouseResult?.categories?.performance?.score;
+      url.result.data.lighthouseResult.categories?.performance?.score;
 
     switch (field) {
-      case 'performance':
-        return performanceScore || -1;
-      case 'fcp':
-        return metrics?.['first-contentful-paint']?.numericValue || Infinity;
-      case 'lcp':
-        return metrics?.['largest-contentful-paint']?.numericValue || Infinity;
-      case 'tbt':
-        return metrics?.['total-blocking-time']?.numericValue || Infinity;
-      case 'cls':
-        return metrics?.['cumulative-layout-shift']?.numericValue || Infinity;
-      case 'speedIndex':
-        return metrics?.['speed-index']?.numericValue || Infinity;
+      case 'performance': {
+        const value = performanceScore;
+        return typeof value === 'number' && value >= 0 ? value : Infinity;
+      }
+      case 'fcp': {
+        const value = metrics['first-contentful-paint']?.numericValue;
+        return typeof value === 'number' && value >= 0 ? value : Infinity;
+      }
+      case 'lcp': {
+        const value = metrics['largest-contentful-paint']?.numericValue;
+        return typeof value === 'number' && value >= 0 ? value : Infinity;
+      }
+      case 'tbt': {
+        const value = metrics['total-blocking-time']?.numericValue;
+        return typeof value === 'number' && value >= 0 ? value : Infinity;
+      }
+      case 'cls': {
+        const value = metrics['cumulative-layout-shift']?.numericValue;
+        return typeof value === 'number' && value >= 0 ? value : Infinity;
+      }
+      case 'speedIndex': {
+        const value = metrics['speed-index']?.numericValue;
+        return typeof value === 'number' && value >= 0 ? value : Infinity;
+      }
       default:
-        return 0;
+        return Infinity;
     }
   };
 
@@ -498,7 +514,10 @@ export default function ScanWebsitePage() {
         const aValue = getMetricValue(a, sortField);
         const bValue = getMetricValue(b, sortField);
 
-        if (aValue === bValue) return 0;
+        // Handle cases where both values are Infinity
+        if (aValue === Infinity && bValue === Infinity) return 0;
+        if (aValue === Infinity) return 1;
+        if (bValue === Infinity) return -1;
 
         const multiplier = sortDirection === 'asc' ? 1 : -1;
 
