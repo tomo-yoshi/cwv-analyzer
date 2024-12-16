@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { XMLParser } from 'fast-xml-parser';
 import Button from '@/components/atoms/buttons/Button';
 import Input from '@/components/atoms/inputs/Input';
@@ -97,6 +97,8 @@ export default function ScanWebsitePage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [showOnlyCompleted, setShowOnlyCompleted] = useState(false);
   const [strategy, setStrategy] = useState<Strategy>('mobile');
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const [isOriginalButtonVisible, setIsOriginalButtonVisible] = useState(true);
 
   const stopTests = () => {
     if (abortController) {
@@ -545,6 +547,26 @@ export default function ScanWebsitePage() {
     );
   };
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsOriginalButtonVisible(entry.isIntersecting);
+      },
+      {
+        threshold: 0,
+        rootMargin: '0px',
+      }
+    );
+
+    if (buttonRef.current) {
+      observer.observe(buttonRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [sitemapUrls.length]);
+
   return (
     <div className='flex-1'>
       <div className='w-full max-w-7xl mx-auto p-8'>
@@ -589,7 +611,10 @@ export default function ScanWebsitePage() {
                   disabled={isRunning}
                 />
 
-                <div className='flex justify-between items-center'>
+                <div
+                  className='flex justify-between items-center'
+                  ref={buttonRef}
+                >
                   <div className='space-x-4 flex items-center'>
                     <div className='text-sm text-gray-600'>
                       {selectedCount} of {sitemapUrls.length} URLs selected
@@ -876,6 +901,33 @@ export default function ScanWebsitePage() {
           </div>
         </div>
       </div>
+      {sitemapUrls.length > 0 && !isOriginalButtonVisible && (
+        <div className='fixed bottom-8 right-8 z-50'>
+          <Button
+            onClick={isRunning ? stopTests : runPageSpeedTests}
+            disabled={!sitemapUrls.some((url) => url.selected)}
+            variant={isRunning ? 'outline' : 'primary'}
+            className='shadow-lg flex items-center gap-2 text-xl'
+            size='base'
+          >
+            {isRunning ? (
+              <>
+                <span>Stop Tests</span>
+                <div className='text-sm'>
+                  ({completedTests} of {selectedCount})
+                </div>
+              </>
+            ) : (
+              <>
+                <span>Run PageSpeed Tests</span>
+                {selectedCount > 0 && (
+                  <div className='text-sm'>({selectedCount})</div>
+                )}
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
