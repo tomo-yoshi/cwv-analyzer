@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { XMLParser } from 'fast-xml-parser';
 import Button from '@/components/atoms/buttons/Button';
 import Input from '@/components/atoms/inputs/Input';
@@ -97,6 +97,8 @@ export default function ScanWebsitePage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [showOnlyCompleted, setShowOnlyCompleted] = useState(false);
   const [strategy, setStrategy] = useState<Strategy>('mobile');
+  const buttonRef = useRef<HTMLDivElement>(null);
+  const [isOriginalButtonVisible, setIsOriginalButtonVisible] = useState(true);
 
   const stopTests = () => {
     if (abortController) {
@@ -140,10 +142,10 @@ export default function ScanWebsitePage() {
     }
   };
 
-  const toggleUrlSelection = (index: number) => {
+  const toggleUrlSelection = (urlLoc: string) => {
     setSitemapUrls((urls) =>
-      urls.map((url, i) =>
-        i === index ? { ...url, selected: !url.selected } : url
+      urls.map((url) =>
+        url.loc === urlLoc ? { ...url, selected: !url.selected } : url
       )
     );
   };
@@ -157,7 +159,7 @@ export default function ScanWebsitePage() {
 
     try {
       if (isConcurrentMode) {
-        const urlChunks = chunkArray(selectedUrls, 10);
+        const urlChunks = chunkArray(selectedUrls, 15);
 
         for (const chunk of urlChunks) {
           if (controller.signal.aborted) {
@@ -534,6 +536,37 @@ export default function ScanWebsitePage() {
     return urls;
   }, [sitemapUrls, showOnlyCompleted, sortField, sortDirection]);
 
+  const selectAllUncompleted = () => {
+    setSitemapUrls((urls) =>
+      urls.map((url) => ({
+        ...url,
+        selected:
+          !url.result?.data?.lighthouseResult?.categories?.performance?.score &&
+          !url.result?.loading,
+      }))
+    );
+  };
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsOriginalButtonVisible(entry.isIntersecting);
+      },
+      {
+        threshold: 0,
+        rootMargin: '0px',
+      }
+    );
+
+    if (buttonRef.current) {
+      observer.observe(buttonRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [sitemapUrls.length]);
+
   return (
     <div className='flex-1'>
       <div className='w-full max-w-7xl mx-auto p-8'>
@@ -578,11 +611,22 @@ export default function ScanWebsitePage() {
                   disabled={isRunning}
                 />
 
-                <div className='flex justify-between items-center'>
+                <div
+                  className='flex justify-between items-center'
+                  ref={buttonRef}
+                >
                   <div className='space-x-4 flex items-center'>
                     <div className='text-sm text-gray-600'>
                       {selectedCount} of {sitemapUrls.length} URLs selected
                     </div>
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={selectAllUncompleted}
+                      disabled={isRunning}
+                    >
+                      Select Uncompleted
+                    </Button>
                     <div className='flex items-center space-x-4'>
                       <div className='flex items-center space-x-2'>
                         <Switch
@@ -751,7 +795,7 @@ export default function ScanWebsitePage() {
                               <input
                                 type='checkbox'
                                 checked={url.selected}
-                                onChange={() => toggleUrlSelection(index)}
+                                onChange={() => toggleUrlSelection(url.loc)}
                                 disabled={isRunning}
                               />
                             </td>
@@ -857,6 +901,33 @@ export default function ScanWebsitePage() {
           </div>
         </div>
       </div>
+      {sitemapUrls.length > 0 && !isOriginalButtonVisible && (
+        <div className='fixed bottom-8 right-8 z-50'>
+          <Button
+            onClick={isRunning ? stopTests : runPageSpeedTests}
+            disabled={!sitemapUrls.some((url) => url.selected)}
+            variant={isRunning ? 'outline' : 'primary'}
+            className='shadow-lg flex items-center gap-2 text-xl'
+            size='base'
+          >
+            {isRunning ? (
+              <>
+                <span>Stop Tests</span>
+                <div className='text-sm'>
+                  ({completedTests} of {selectedCount})
+                </div>
+              </>
+            ) : (
+              <>
+                <span>Run PageSpeed Tests</span>
+                {selectedCount > 0 && (
+                  <div className='text-sm'>({selectedCount})</div>
+                )}
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
