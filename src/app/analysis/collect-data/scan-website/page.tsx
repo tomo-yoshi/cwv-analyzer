@@ -140,10 +140,10 @@ export default function ScanWebsitePage() {
     }
   };
 
-  const toggleUrlSelection = (index: number) => {
+  const toggleUrlSelection = (urlLoc: string) => {
     setSitemapUrls((urls) =>
-      urls.map((url, i) =>
-        i === index ? { ...url, selected: !url.selected } : url
+      urls.map((url) =>
+        url.loc === urlLoc ? { ...url, selected: !url.selected } : url
       )
     );
   };
@@ -751,7 +751,7 @@ export default function ScanWebsitePage() {
                               <input
                                 type='checkbox'
                                 checked={url.selected}
-                                onChange={() => toggleUrlSelection(index)}
+                                onChange={() => toggleUrlSelection(url.loc)}
                                 disabled={isRunning}
                               />
                             </td>
