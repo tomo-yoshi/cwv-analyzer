@@ -157,7 +157,7 @@ export default function ScanWebsitePage() {
 
     try {
       if (isConcurrentMode) {
-        const urlChunks = chunkArray(selectedUrls, 10);
+        const urlChunks = chunkArray(selectedUrls, 15);
 
         for (const chunk of urlChunks) {
           if (controller.signal.aborted) {
@@ -534,6 +534,17 @@ export default function ScanWebsitePage() {
     return urls;
   }, [sitemapUrls, showOnlyCompleted, sortField, sortDirection]);
 
+  const selectAllUncompleted = () => {
+    setSitemapUrls((urls) =>
+      urls.map((url) => ({
+        ...url,
+        selected:
+          !url.result?.data?.lighthouseResult?.categories?.performance?.score &&
+          !url.result?.loading,
+      }))
+    );
+  };
+
   return (
     <div className='flex-1'>
       <div className='w-full max-w-7xl mx-auto p-8'>
@@ -583,6 +594,14 @@ export default function ScanWebsitePage() {
                     <div className='text-sm text-gray-600'>
                       {selectedCount} of {sitemapUrls.length} URLs selected
                     </div>
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={selectAllUncompleted}
+                      disabled={isRunning}
+                    >
+                      Select Uncompleted
+                    </Button>
                     <div className='flex items-center space-x-4'>
                       <div className='flex items-center space-x-2'>
                         <Switch
